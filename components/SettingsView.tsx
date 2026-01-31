@@ -1,7 +1,9 @@
 
 import React, { useState } from 'react';
+import { useSettings } from '../contexts/SettingsContext';
 
 const SettingsView: React.FC = () => {
+  const { settings, updateSettings, saveSettings } = useSettings();
   const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('success');
 
   const handleTestConnection = () => {
@@ -30,17 +32,21 @@ const SettingsView: React.FC = () => {
             </div>
             <div className="grid grid-cols-1 gap-6">
               {[
-                { label: 'Workflow Directory Path', value: 'C:/Users/Admin/Documents/AI-Workflows', hint: 'Path where your custom ComfyUI JSON workflow files are stored.' },
-                { label: 'Input Directory Path', value: 'D:/Data/AI-Input' },
-                { label: 'Output Directory Path', value: 'D:/Generations/Comfy-Output' }
+                { label: 'Workflow Directory Path', value: settings.workflowDirectory, hint: 'Path where your custom ComfyUI JSON workflow files are stored.', key: 'workflow' },
+                { label: 'Input Directory Path', value: settings.inputDirectory, key: 'input' },
+                { label: 'Output Directory Path', value: settings.outputDirectory, key: 'output' }
               ].map((field, idx) => (
                 <div key={idx} className="flex flex-col gap-2">
                   <label className="text-slate-700 dark:text-white text-xs font-black uppercase tracking-wider">{field.label}</label>
                   <div className="flex w-full items-stretch rounded-lg shadow-sm">
-                    <input 
+                    <input
                       className="flex-1 bg-slate-50 dark:bg-[#1b1f27] border border-slate-200 dark:border-border-dark border-r-0 rounded-l-lg text-slate-900 dark:text-white px-4 h-12 focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all font-medium text-sm"
-                      type="text" 
-                      defaultValue={field.value}
+                      type="text"
+                      value={field.value}
+                      onChange={(e) => {
+                        const key = field.key === 'workflow' ? 'workflowDirectory' : field.key === 'input' ? 'inputDirectory' : 'outputDirectory';
+                        updateSettings({ [key]: e.target.value });
+                      }}
                     />
                     <button className="bg-slate-100 dark:bg-[#282e39] border border-slate-200 dark:border-border-dark border-l-0 rounded-r-lg px-4 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
                       <span className="material-symbols-outlined text-slate-500 dark:text-[#9ca6ba]">folder_open</span>
@@ -62,14 +68,15 @@ const SettingsView: React.FC = () => {
               <label className="text-slate-700 dark:text-white text-xs font-black uppercase tracking-wider">ComfyUI Endpoint (Host/IP & Port)</label>
               <div className="flex flex-wrap md:flex-nowrap gap-4 items-start">
                 <div className="flex-1 w-full">
-                  <input 
+                  <input
                     className="w-full bg-slate-50 dark:bg-[#1b1f27] border border-slate-200 dark:border-border-dark rounded-lg text-slate-900 dark:text-white px-4 h-12 focus:ring-1 focus:ring-primary focus:border-primary outline-none font-mono text-sm"
-                    placeholder="http://localhost:8188" 
-                    type="text" 
-                    defaultValue="http://127.0.0.1:8188"
+                    placeholder="http://localhost:8188"
+                    type="text"
+                    value={settings.comfyUIServerUrl}
+                    onChange={(e) => updateSettings({ comfyUIServerUrl: e.target.value })}
                   />
                 </div>
-                <button 
+                <button
                   onClick={handleTestConnection}
                   disabled={testStatus === 'testing'}
                   className="h-12 px-6 border border-primary text-primary font-black text-xs uppercase tracking-widest rounded-lg hover:bg-primary/5 dark:hover:bg-primary/10 transition-all flex items-center gap-2 whitespace-nowrap active:scale-95 disabled:opacity-50"
@@ -80,7 +87,7 @@ const SettingsView: React.FC = () => {
                   Test Connection
                 </button>
               </div>
-              
+
               {testStatus === 'success' && (
                 <div className="flex items-center gap-2 py-2 px-3 bg-green-500/10 border border-green-500/20 rounded-lg w-fit animate-in fade-in slide-in-from-top-1 duration-300">
                   <span className="material-symbols-outlined text-green-500 text-base font-bold">check_circle</span>
@@ -112,7 +119,7 @@ const SettingsView: React.FC = () => {
         <div className="bg-blue-500/5 dark:bg-blue-500/5 border border-blue-500/20 p-5 rounded-2xl flex gap-4 backdrop-blur-sm">
           <span className="material-symbols-outlined text-primary font-bold">info</span>
           <p className="text-sm text-slate-600 dark:text-[#9ca6ba] leading-relaxed">
-            <strong className="text-slate-900 dark:text-white font-black uppercase text-xs tracking-widest mr-1">Note:</strong> 
+            <strong className="text-slate-900 dark:text-white font-black uppercase text-xs tracking-widest mr-1">Note:</strong>
             Changing the directory paths will refresh the workflow library. Ensure that ComfyUI is running and the "Enable Remote Access" flag is active if connecting from a different machine.
           </p>
         </div>

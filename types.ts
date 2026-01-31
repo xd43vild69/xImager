@@ -34,6 +34,12 @@ export interface ExecutionState {
   iterRate: string;
   totalTime: string;
   resultUrl: string | null;
+  promptId?: string;
+}
+
+export interface ComfyUIConfig {
+  serverUrl: string;
+  clientId: string;
 }
 
 export interface HistoryItem {

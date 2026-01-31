@@ -1,9 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ExecutionState, LogEntry } from '../types';
 import LogFeed from './LogFeed';
-import { generateResultImage } from '../services/gemini';
+import * as ComfyUI from '../services/comfyui';
+import { useSettings } from '../contexts/SettingsContext';
 
-const ExecutionView: React.FC = () => {
+interface ExecutionViewProps {
+  selectedWorkflow: string;
+}
+
+const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
+  const { settings } = useSettings();
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [prompt, setPrompt] = useState('');
 
@@ -20,6 +26,11 @@ const ExecutionView: React.FC = () => {
     totalTime: '0s',
     resultUrl: null,
   });
+
+  // Update ComfyUI server URL when settings change
+  useEffect(() => {
+    ComfyUI.setServerUrl(settings.comfyUIServerUrl);
+  }, [settings.comfyUIServerUrl]);
 
   const addLog = (level: LogEntry['level'], message: string) => {
     const now = new Date();
@@ -40,6 +51,8 @@ const ExecutionView: React.FC = () => {
   const runProcess = async () => {
     if (execution.isProcessing) return;
 
+    const startTime = Date.now();
+
     setExecution(prev => ({
       ...prev,
       isProcessing: true,
@@ -51,57 +64,95 @@ const ExecutionView: React.FC = () => {
 
     setLogs([]);
 
-    addLog('INFO', 'Initializing workflow engine...');
-    addLog('INFO', 'Connecting to Gemini API backend... connected.');
-    addLog('INFO', 'Prompt validation successful.');
-
-    if (referenceImage) {
-      addLog('INFO', `Reference image attached: ${referenceImage.name}`);
-    }
-
-    addLog('LOAD', "Model 'sd_xl_base_1.0.safetensors' requested...");
-
-    const totalSteps = 50;
-    const stepDuration = 80;
-
-    for (let i = 1; i <= totalSteps; i++) {
-      await new Promise(r => setTimeout(r, stepDuration));
-
-      const progress = (i / totalSteps) * 100;
-
-      setExecution(prev => ({
-        ...prev,
-        step: i,
-        progress,
-        eta: `${((totalSteps - i) * stepDuration / 1000).toFixed(1)}s`,
-        iterRate: `${(1000 / stepDuration).toFixed(1)} it/s`,
-        totalTime: `${(i * stepDuration / 1000).toFixed(1)}s`,
-      }));
-
-      if (i % 10 === 0 || i === 1) {
-        addLog(
-          'EXEC',
-          `Sampling step ${i} of ${totalSteps}... denoising: ${(1 - i / totalSteps).toFixed(2)}`
-        );
-      }
-    }
+    addLog('INFO', 'Initializing ComfyUI workflow engine...');
+    addLog('INFO', `Connecting to ComfyUI server at ${ComfyUI.getServerUrl()}...`);
+    addLog('INFO', `Loading workflow: ${selectedWorkflow}`);
 
     try {
+      // Load workflow JSON
+      const workflow = await ComfyUI.loadWorkflow(selectedWorkflow);
+      addLog('INFO', 'Workflow loaded successfully.');
+      addLog('INFO', 'Prompt validation successful.');
+
+      let uploadedImageFilename: string | undefined;
+
+      // Upload reference image if provided
+      if (referenceImage) {
+        addLog('INFO', `Uploading reference image: ${referenceImage.name}`);
+        uploadedImageFilename = await ComfyUI.uploadImage(referenceImage);
+        addLog('INFO', `Image uploaded successfully: ${uploadedImageFilename}`);
+      }
+
+      addLog('LOAD', "Model 'sd_xl_base_1.0.safetensors' requested...");
+
+      // Queue the prompt
+      const promptText = prompt || 'Abstract aesthetic digital art rendering, architectural forms';
+      addLog('INFO', 'Queueing workflow execution...');
+      const promptId = await ComfyUI.queuePrompt(workflow, promptText, uploadedImageFilename);
+
+      setExecution(prev => ({ ...prev, promptId }));
+      addLog('INFO', `Workflow queued with ID: ${promptId}`);
+      addLog('EXEC', 'Starting generation process...');
+
+      // Simulate progress while polling
+      const totalSteps = 50;
+      const stepDuration = 100;
+      let currentStep = 0;
+
+      const progressInterval = setInterval(() => {
+        currentStep++;
+        if (currentStep > totalSteps) {
+          clearInterval(progressInterval);
+          return;
+        }
+
+        const progress = (currentStep / totalSteps) * 95; // Cap at 95% until complete
+        const elapsed = (Date.now() - startTime) / 1000;
+
+        setExecution(prev => ({
+          ...prev,
+          step: currentStep,
+          progress,
+          eta: `${((totalSteps - currentStep) * stepDuration / 1000).toFixed(1)}s`,
+          iterRate: `${(1000 / stepDuration).toFixed(1)} it/s`,
+          totalTime: `${elapsed.toFixed(1)}s`,
+        }));
+
+        if (currentStep % 10 === 0 || currentStep === 1) {
+          addLog(
+            'EXEC',
+            `Sampling step ${currentStep} of ${totalSteps}... denoising: ${(1 - currentStep / totalSteps).toFixed(2)}`
+          );
+        }
+      }, stepDuration);
+
+      // Poll for completion
+      addLog('INFO', 'Polling for execution results...');
+      const history = await ComfyUI.pollForCompletion(promptId, 120, 1000);
+      clearInterval(progressInterval);
+
       addLog('INFO', 'Generation complete. Decoding results...');
 
-      const imageUrl = await generateResultImage(
-        prompt || 'Abstract aesthetic digital art rendering, architectural forms'
-      );
+      // Extract image from history
+      const imageUrl = await ComfyUI.extractImageFromHistory(history);
+
+      if (!imageUrl) {
+        throw new Error('No image generated in workflow output');
+      }
+
+      const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
 
       setExecution(prev => ({
         ...prev,
         isProcessing: false,
         progress: 100,
+        step: totalSteps,
         resultUrl: imageUrl,
+        totalTime: `${totalTime}s`,
       }));
 
       addLog('LOAD', 'Output assets synchronized to storage.');
-      addLog('INFO', 'Execution finished successfully.');
+      addLog('INFO', `Execution finished successfully in ${totalTime}s.`);
     } catch (error) {
       addLog(
         'ERROR',
