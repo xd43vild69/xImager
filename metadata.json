@@ -1,0 +1,6 @@
+
+{
+  "name": "AI Workflow Orchestrator",
+  "description": "A high-performance dashboard for managing AI image generation and enhancement workflows, featuring real-time GPU monitoring, log streaming, and Gemini-powered generation.",
+  "requestFramePermissions": ["camera"]
+}
