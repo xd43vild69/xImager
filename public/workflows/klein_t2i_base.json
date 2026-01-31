@@ -1,0 +1,220 @@
+{
+  "80": {
+    "inputs": {
+      "sampler_name": "dpmpp_2m_sde"
+    },
+    "class_type": "KSamplerSelect",
+    "_meta": {
+      "title": "KSamplerSelect"
+    }
+  },
+  "81": {
+    "inputs": {
+      "noise": [
+        "93",
+        0
+      ],
+      "guider": [
+        "91",
+        0
+      ],
+      "sampler": [
+        "80",
+        0
+      ],
+      "sigmas": [
+        "90",
+        0
+      ],
+      "latent_image": [
+        "83",
+        0
+      ]
+    },
+    "class_type": "SamplerCustomAdvanced",
+    "_meta": {
+      "title": "SamplerCustomAdvanced"
+    }
+  },
+  "82": {
+    "inputs": {
+      "samples": [
+        "81",
+        0
+      ],
+      "vae": [
+        "88",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "83": {
+    "inputs": {
+      "width": [
+        "85",
+        0
+      ],
+      "height": [
+        "86",
+        0
+      ],
+      "batch_size": 1
+    },
+    "class_type": "EmptyFlux2LatentImage",
+    "_meta": {
+      "title": "Empty Flux 2 Latent"
+    }
+  },
+  "84": {
+    "inputs": {
+      "text": "",
+      "clip": [
+        "94",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Negative Prompt)"
+    }
+  },
+  "85": {
+    "inputs": {
+      "value": 832
+    },
+    "class_type": "PrimitiveInt",
+    "_meta": {
+      "title": "Width"
+    }
+  },
+  "86": {
+    "inputs": {
+      "value": 1480
+    },
+    "class_type": "PrimitiveInt",
+    "_meta": {
+      "title": "Height"
+    }
+  },
+  "87": {
+    "inputs": {
+      "unet_name": "vintageBeauties_fluxKlein9BV1.safetensors",
+      "weight_dtype": "default"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "Load Diffusion Model"
+    }
+  },
+  "88": {
+    "inputs": {
+      "vae_name": "flux2-vae_klein.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "89": {
+    "inputs": {
+      "text": [
+        "99",
+        0
+      ],
+      "clip": [
+        "94",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Positive Prompt)"
+    }
+  },
+  "90": {
+    "inputs": {
+      "steps": 4,
+      "width": [
+        "85",
+        0
+      ],
+      "height": [
+        "86",
+        0
+      ]
+    },
+    "class_type": "Flux2Scheduler",
+    "_meta": {
+      "title": "Flux2Scheduler"
+    }
+  },
+  "91": {
+    "inputs": {
+      "cfg": 1,
+      "model": [
+        "87",
+        0
+      ],
+      "positive": [
+        "89",
+        0
+      ],
+      "negative": [
+        "84",
+        0
+      ]
+    },
+    "class_type": "CFGGuider",
+    "_meta": {
+      "title": "CFGGuider"
+    }
+  },
+  "93": {
+    "inputs": {
+      "noise_seed": 314159265358979
+    },
+    "class_type": "RandomNoise",
+    "_meta": {
+      "title": "RandomNoise"
+    }
+  },
+  "94": {
+    "inputs": {
+      "clip_name": "qwen_3_8b_fp8mixed_klein.safetensors",
+      "type": "flux2",
+      "device": "default"
+    },
+    "class_type": "CLIPLoader",
+    "_meta": {
+      "title": "Load CLIP"
+    }
+  },
+  "95": {
+    "inputs": {
+      "filename_prefix": "2026-01-31-14-45-18",
+      "images": [
+        "82",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  },
+  "99": {
+    "inputs": {
+      "string_a": "(full body shot), looking at viewer\n\namateur photo of a nude woman\n\nshiny glossy wet skin standing, high heel sandals\n\nabsolute sculptural perfection with exaggerated proportions\n\narms behind back\n\npale white skin\n\ntanlines\n\n45 yo, plump, thick thighs, wide hips, fat\n\nA woman seen from behind, her body facing away from the camera while her head is turned over her shoulder, looking directly at the viewer.",
+      "string_b": "Enhance this image to hyper-realistic photography quality in 4K, shot on Canon EOS R5 with 50mm f/1.2 lens, natural available light, slight chromatic aberration. Emphasize raw texture, micro-contrast, and realistic skin tones",
+      "delimiter": ""
+    },
+    "class_type": "StringConcatenate",
+    "_meta": {
+      "title": "Concatenate"
+    }
+  }
+}

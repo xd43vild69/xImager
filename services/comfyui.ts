@@ -5,10 +5,29 @@
 let COMFYUI_SERVER_URL = 'http://127.0.0.1:8188';
 
 /**
+ * Validate and normalize ComfyUI server URL
+ * Automatically adds http:// if protocol is missing
+ */
+const normalizeServerUrl = (url: string): string => {
+    let normalized = url.trim();
+
+    // Add http:// if no protocol specified
+    if (!normalized.startsWith('http://') && !normalized.startsWith('https://')) {
+        normalized = `http://${normalized}`;
+    }
+
+    // Remove trailing slash
+    normalized = normalized.replace(/\/$/, '');
+
+    return normalized;
+};
+
+/**
  * Set the ComfyUI server URL (called from settings)
  */
 export const setServerUrl = (url: string): void => {
-    COMFYUI_SERVER_URL = url;
+    COMFYUI_SERVER_URL = normalizeServerUrl(url);
+    console.log('[ComfyUI] Server URL set to:', COMFYUI_SERVER_URL);
 };
 
 /**
@@ -221,33 +240,17 @@ export const loadWorkflow = async (workflowName: string): Promise<any> => {
  */
 export const getAvailableWorkflows = async (): Promise<string[]> => {
     try {
-        // Since we can't list directory contents directly in the browser,
-        // we'll try to fetch a manifest file or use a predefined list
-        // For now, we'll attempt to fetch common workflow files
-        const commonWorkflows = [
-            'SDXL_Image_Enhancer_v1.json',
-            'SDXL_Image_Enhancer_v4.json',
-            'Text_to_Video_StableVideo.json',
-            'ControlNet_Canny_Face.json',
-        ];
+        const response = await fetch('/workflows/manifest.json');
 
-        const availableWorkflows: string[] = [];
-
-        // Try to fetch each workflow to see if it exists
-        for (const workflow of commonWorkflows) {
-            try {
-                const response = await fetch(`/workflows/${workflow}`, { method: 'HEAD' });
-                if (response.ok) {
-                    availableWorkflows.push(workflow);
-                }
-            } catch {
-                // Workflow doesn't exist, skip it
-            }
+        if (!response.ok) {
+            console.warn('Workflow manifest not found, returning empty list');
+            return [];
         }
 
-        return availableWorkflows;
+        const manifest = await response.json();
+        return manifest.workflows || [];
     } catch (error) {
-        console.error('Failed to get available workflows:', error);
+        console.error('Failed to load workflow manifest:', error);
         return [];
     }
 };
