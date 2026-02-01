@@ -33,7 +33,7 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
     eta: '0s',
     iterRate: '0 it/s',
     totalTime: '0s',
-    resultUrl: null,
+    resultUrl: '/removeCharacter.jpg',
   });
 
 
@@ -300,7 +300,7 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
               <div className="flex-1 bg-slate-100 dark:bg-panel-dark border rounded-xl relative overflow-hidden shadow-2xl">
                 <div className="absolute inset-0 p-2 flex items-center justify-center group">
                   <img
-                    src={execution.resultUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=40'}
+                    src={execution.resultUrl || '/removeCharacter.jpg'}
                     alt="Generation Result"
                     className={`max-w-full max-h-full object-contain rounded-lg transition-all duration-500 ${execution.isProcessing ? 'blur-md opacity-50 grayscale' : ''
                       }`}
