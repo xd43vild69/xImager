@@ -224,6 +224,30 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [runProcess]);
 
+  const handlePasteFromClipboard = async () => {
+    try {
+      const items = await navigator.clipboard.read();
+      for (const item of items) {
+        // Find the image type if present
+        const imageType = item.types.find(type => type.startsWith('image/'));
+        if (imageType) {
+          const blob = await item.getType(imageType);
+          // Create a File object from the Blob
+          const file = new File([blob], `pasted_image_${Date.now()}.${imageType.split('/')[1]}`, { type: imageType });
+
+          setReferenceImage(file);
+          setReferencePreview(URL.createObjectURL(file));
+          addLog('INFO', 'Image pasted from clipboard.');
+          return;
+        }
+      }
+      addLog('INFO', 'No image found in the clipboard.');
+    } catch (error) {
+      console.error('Clipboard paste error:', error);
+      addLog('ERROR', 'Failed to paste from clipboard. Please allow clipboard access.');
+    }
+  };
+
   return (
     <div className="flex flex-col h-full bg-slate-50 dark:bg-background-dark/50 overflow-hidden">
       {/* Hidden file input */}
@@ -270,9 +294,18 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 min-h-[400px]">
             {/* Reference Image */}
             <div className="flex flex-col gap-4">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                Reference Images
-              </h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                  Reference Images
+                </h3>
+                <button
+                  onClick={handlePasteFromClipboard}
+                  className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-primary transition-colors"
+                  title="Paste from Clipboard"
+                >
+                  <span className="material-symbols-outlined text-sm">content_paste</span>
+                </button>
+              </div>
 
               <div
                 onClick={() =>
@@ -324,18 +357,13 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
                   {execution.resultUrl && !execution.isProcessing && (
                     <button
                       onClick={() => {
-                        const link = document.createElement('a');
-                        link.href = execution.resultUrl!;
-                        link.download = `generation_${Date.now()}.png`;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        addLog('INFO', 'Image download started.');
+                        window.open(execution.resultUrl!, '_blank');
+                        addLog('INFO', 'Image opened in new tab.');
                       }}
                       className="absolute top-4 right-4 bg-white/90 dark:bg-black/80 p-3 rounded-full shadow-lg hover:scale-110 active:scale-95 transition-all opacity-0 group-hover:opacity-100 flex items-center justify-center text-primary z-10"
-                      title="Download Original Image"
+                      title="Open in New Tab"
                     >
-                      <span className="material-symbols-outlined">download</span>
+                      <span className="material-symbols-outlined">open_in_new</span>
                     </button>
                   )}
                 </div>
