@@ -248,6 +248,9 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
     }
   };
 
+  const [isPromptCollapsed, setIsPromptCollapsed] = useState(false);
+  const [isLogsCollapsed, setIsLogsCollapsed] = useState(false);
+
   return (
     <div className="flex flex-col h-full bg-slate-50 dark:bg-background-dark/50 overflow-hidden">
       {/* Hidden file input */}
@@ -274,21 +277,31 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
       <div className="flex-1 overflow-y-auto p-4 sm:p-6">
         <div className="flex flex-col gap-6 h-full max-w-[1400px] mx-auto">
           {/* Prompt */}
-          <div className="bg-white dark:bg-panel-dark border border-slate-200 dark:border-border-dark rounded-xl p-4 shadow-sm flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                Positive Prompt
-              </h3>
-              <span className="text-[10px] text-slate-400 font-mono">
-                CLIP_L + CLIP_G
-              </span>
+          <div className="bg-white dark:bg-panel-dark border border-slate-200 dark:border-border-dark rounded-xl p-4 shadow-sm flex flex-col gap-3 transition-all duration-300">
+            <div className="flex items-center justify-between cursor-pointer" onClick={() => setIsPromptCollapsed(!isPromptCollapsed)}>
+              <div className="flex items-center gap-2">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                  Positive Prompt
+                </h3>
+                <span className="material-symbols-outlined text-sm text-slate-400">
+                  {isPromptCollapsed ? 'expand_more' : 'expand_less'}
+                </span>
+              </div>
+              {!isPromptCollapsed && (
+                <span className="text-[10px] text-slate-400 font-mono">
+                  CLIP_L + CLIP_G
+                </span>
+              )}
             </div>
-            <textarea
-              value={prompt}
-              onChange={e => setPrompt(e.target.value)}
-              placeholder="Enter generation prompt here..."
-              className="w-full h-24 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3 text-xs sm:text-sm font-medium focus:ring-1 focus:ring-primary outline-none resize-none"
-            />
+
+            <div className={`overflow-hidden transition-all duration-300 ${isPromptCollapsed ? 'h-0 opacity-0' : 'h-24 opacity-100'}`}>
+              <textarea
+                value={prompt}
+                onChange={e => setPrompt(e.target.value)}
+                placeholder="Enter generation prompt here..."
+                className="w-full h-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3 text-xs sm:text-sm font-medium focus:ring-1 focus:ring-primary outline-none resize-none"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 min-h-[400px]">
@@ -374,20 +387,34 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
       </div>
 
       {/* Footer */}
-      <footer className="bg-white dark:bg-panel-dark border-t p-4 sm:p-6">
-        <div className="max-w-[1400px] mx-auto flex gap-6">
-          <button
-            onClick={runProcess}
-            disabled={execution.isProcessing}
-            className={`px-8 py-5 rounded-xl font-black ${execution.isProcessing
-              ? 'bg-slate-200 text-slate-400'
-              : 'bg-primary text-white hover:scale-105'
-              }`}
-          >
-            QUEUE PROMPT
-          </button>
+      <footer className="bg-white dark:bg-panel-dark border-t p-4 transition-all duration-300">
+        <div className="max-w-[1400px] mx-auto flex flex-col gap-2">
+          {/* Controls Header */}
+          <div className="flex items-center justify-between">
+            <button
+              onClick={runProcess}
+              disabled={execution.isProcessing}
+              className={`px-6 py-2.5 rounded-lg font-black text-sm uppercase tracking-wide transition-all ${execution.isProcessing
+                ? 'bg-slate-200 text-slate-400'
+                : 'bg-primary text-white hover:bg-primary/90 active:scale-95 shadow-lg shadow-primary/25'
+                }`}
+            >
+              {execution.isProcessing ? 'Processing' : 'Queue Prompt'}
+            </button>
 
-          <div className="flex-1">
+            <button
+              onClick={() => setIsLogsCollapsed(!isLogsCollapsed)}
+              className="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-primary transition-colors"
+            >
+              {isLogsCollapsed ? 'Show Logs' : 'Hide Logs'}
+              <span className="material-symbols-outlined text-sm">
+                {isLogsCollapsed ? 'expand_less' : 'expand_more'}
+              </span>
+            </button>
+          </div>
+
+          {/* Collapsible Logs */}
+          <div className={`overflow-hidden transition-all duration-300 ${isLogsCollapsed ? 'h-0 opacity-0' : 'h-32 opacity-100'}`}>
             <LogFeed logs={logs} />
           </div>
         </div>
