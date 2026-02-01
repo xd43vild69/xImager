@@ -2,8 +2,10 @@
   "workflows": [
     "SDXL_Image_Enhancer_v1.json",
     "SDXL_Image_Enhancer_v4.json",
+    "klein_remove_character (3).json",
+    "klein_remove_character.json",
     "klein_t2i_base.json"
   ],
-  "generatedAt": "2026-02-01T13:54:11.804Z",
-  "count": 3
+  "generatedAt": "2026-02-01T15:21:43.417Z",
+  "count": 5
 }

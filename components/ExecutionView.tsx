@@ -29,6 +29,34 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
 
 
 
+  // Handle paste events for reference images
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      // Ignore if prompt textarea is focused
+      if (document.activeElement?.tagName === 'TEXTAREA') {
+        return;
+      }
+
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const blob = items[i].getAsFile();
+          if (blob) {
+            setReferenceImage(blob);
+            setReferencePreview(URL.createObjectURL(blob));
+            addLog('INFO', 'Image loaded from clipboard.');
+          }
+          break;
+        }
+      }
+    };
+
+    window.addEventListener('paste', handlePaste);
+    return () => window.removeEventListener('paste', handlePaste);
+  }, []);
+
   const addLog = (level: LogEntry['level'], message: string) => {
     const now = new Date();
     const timestamp = `${now
@@ -216,11 +244,13 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
                 className="flex-1 bg-slate-100 dark:bg-panel-dark border-2 border-dashed border-slate-300 dark:border-border-dark rounded-xl flex items-center justify-center cursor-pointer relative overflow-hidden shadow-inner hover:border-primary/50 transition-all"
               >
                 {referencePreview ? (
-                  <img
-                    src={referencePreview}
-                    alt="Reference"
-                    className="absolute inset-0 w-full h-full object-cover rounded-xl"
-                  />
+                  <div className="absolute inset-0 p-2 flex items-center justify-center">
+                    <img
+                      src={referencePreview}
+                      alt="Reference"
+                      className="max-w-full max-h-full object-contain rounded-lg shadow-sm"
+                    />
+                  </div>
                 ) : (
                   <div className="text-center z-10">
                     <div className="size-16 rounded-2xl bg-slate-200 dark:bg-slate-800 flex items-center justify-center mb-4">
@@ -246,17 +276,32 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
               </h3>
 
               <div className="flex-1 bg-slate-100 dark:bg-panel-dark border rounded-xl relative overflow-hidden shadow-2xl">
-                <div
-                  className={`absolute inset-0 bg-cover bg-center transition-all ${execution.isProcessing
-                    ? 'blur-md opacity-40 grayscale'
-                    : ''
-                    }`}
-                  style={{
-                    backgroundImage: `url('${execution.resultUrl ||
-                      'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=40'
-                      }')`,
-                  }}
-                />
+                <div className="absolute inset-0 p-2 flex items-center justify-center group">
+                  <img
+                    src={execution.resultUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=40'}
+                    alt="Generation Result"
+                    className={`max-w-full max-h-full object-contain rounded-lg transition-all duration-500 ${execution.isProcessing ? 'blur-md opacity-50 grayscale' : ''
+                      }`}
+                  />
+
+                  {execution.resultUrl && !execution.isProcessing && (
+                    <button
+                      onClick={() => {
+                        const link = document.createElement('a');
+                        link.href = execution.resultUrl!;
+                        link.download = `generation_${Date.now()}.png`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        addLog('INFO', 'Image download started.');
+                      }}
+                      className="absolute top-4 right-4 bg-white/90 dark:bg-black/80 p-3 rounded-full shadow-lg hover:scale-110 active:scale-95 transition-all opacity-0 group-hover:opacity-100 flex items-center justify-center text-primary z-10"
+                      title="Download Original Image"
+                    >
+                      <span className="material-symbols-outlined">download</span>
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
