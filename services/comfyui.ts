@@ -1,53 +1,32 @@
+// ComfyUI API Service (via Backend Proxy)
+// Frontend NEVER talks directly to ComfyUI (:8188)
 
-// ComfyUI API Service
-// Handles communication with ComfyUI server for workflow execution and image generation
-
-let COMFYUI_SERVER_URL = 'http://127.0.0.1:8188';
-
-/**
- * Validate and normalize ComfyUI server URL
- * Automatically adds http:// if protocol is missing
- */
-const normalizeServerUrl = (url: string): string => {
-    let normalized = url.trim();
-
-    // Add http:// if no protocol specified
-    if (!normalized.startsWith('http://') && !normalized.startsWith('https://')) {
-        normalized = `http://${normalized}`;
-    }
-
-    // Remove trailing slash
-    normalized = normalized.replace(/\/$/, '');
-
-    return normalized;
-};
+let COMFY_PROXY_URL = import.meta.env.VITE_COMFY_API_URL || 'http://127.0.0.1:8188/api/comfy';
 
 /**
- * Set the ComfyUI server URL (called from settings)
+ * Set proxy base URL (normally not needed unless you change it)
  */
 export const setServerUrl = (url: string): void => {
-    COMFYUI_SERVER_URL = normalizeServerUrl(url);
-    console.log('[ComfyUI] Server URL set to:', COMFYUI_SERVER_URL);
+    COMFY_PROXY_URL = url.replace(/\/+$/, '');
+    console.log('[ComfyUI] Proxy URL set to:', COMFY_PROXY_URL);
 };
 
 /**
- * Get the current ComfyUI server URL
+ * Get current proxy URL
  */
 export const getServerUrl = (): string => {
-    return COMFYUI_SERVER_URL;
+    return COMFY_PROXY_URL;
 };
 
-/**
- * Upload an image file to ComfyUI server
- * @param file - The image file to upload
- * @returns The filename assigned by ComfyUI
- */
+/* ===============================
+   UPLOAD IMAGE
+================================ */
 export const uploadImage = async (file: File): Promise<string> => {
     const formData = new FormData();
     formData.append('image', file);
     formData.append('overwrite', 'true');
 
-    const response = await fetch(`${COMFYUI_SERVER_URL}/upload/image`, {
+    const response = await fetch(`${COMFY_PROXY_URL}/upload/image`, {
         method: 'POST',
         body: formData,
     });
@@ -60,40 +39,37 @@ export const uploadImage = async (file: File): Promise<string> => {
     return data.name;
 };
 
-/**
- * Queue a workflow prompt for execution
- * @param workflowJson - The workflow JSON object
- * @param prompt - The text prompt to use
- * @param imageFilename - Optional uploaded image filename
- * @returns The prompt ID for tracking execution
- */
+/* ===============================
+   QUEUE PROMPT
+================================ */
 export const queuePrompt = async (
     workflowJson: any,
     prompt: string,
     imageFilename?: string
 ): Promise<string> => {
-    // Clone the workflow to avoid mutating the original
     const workflow = JSON.parse(JSON.stringify(workflowJson));
 
-    // Update prompt in the workflow
-    // This assumes a common structure - adjust based on your actual workflow
     for (const nodeId in workflow) {
         const node = workflow[nodeId];
 
-        // Look for text prompt nodes (common class_type values)
-        if (node.class_type === 'CLIPTextEncode' ||
+        // Text prompt
+        if (
+            node.class_type === 'CLIPTextEncode' ||
             node.class_type === 'PromptNode' ||
-            node.class_type === 'Text') {
-            if (node.inputs && 'text' in node.inputs) {
+            node.class_type === 'Text'
+        ) {
+            if (node.inputs?.text !== undefined) {
                 node.inputs.text = prompt;
             }
         }
 
-        // Look for image loader nodes
-        if (imageFilename && (
-            node.class_type === 'LoadImage' ||
-            node.class_type === 'ImageLoader')) {
-            if (node.inputs && 'image' in node.inputs) {
+        // Image input
+        if (
+            imageFilename &&
+            (node.class_type === 'LoadImage' ||
+                node.class_type === 'ImageLoader')
+        ) {
+            if (node.inputs?.image !== undefined) {
                 node.inputs.image = imageFilename;
             }
         }
@@ -104,11 +80,9 @@ export const queuePrompt = async (
         client_id: generateClientId(),
     };
 
-    const response = await fetch(`${COMFYUI_SERVER_URL}/prompt`, {
+    const response = await fetch(`${COMFY_PROXY_URL}/prompt`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
     });
 
@@ -120,13 +94,11 @@ export const queuePrompt = async (
     return data.prompt_id;
 };
 
-/**
- * Get execution history for a prompt
- * @param promptId - The prompt ID to check
- * @returns The history data including outputs
- */
+/* ===============================
+   HISTORY
+================================ */
 export const getHistory = async (promptId: string): Promise<any> => {
-    const response = await fetch(`${COMFYUI_SERVER_URL}/history/${promptId}`);
+    const response = await fetch(`${COMFY_PROXY_URL}/history/${promptId}`);
 
     if (!response.ok) {
         throw new Error(`Failed to get history: ${response.statusText}`);
@@ -136,40 +108,9 @@ export const getHistory = async (promptId: string): Promise<any> => {
     return data[promptId];
 };
 
-/**
- * Download a generated image from ComfyUI
- * @param filename - The image filename
- * @param subfolder - The subfolder path
- * @param type - The file type (usually 'output')
- * @returns The image as a Blob
- */
-export const getImage = async (
-    filename: string,
-    subfolder: string = '',
-    type: string = 'output'
-): Promise<Blob> => {
-    const params = new URLSearchParams({
-        filename,
-        subfolder,
-        type,
-    });
-
-    const response = await fetch(`${COMFYUI_SERVER_URL}/view?${params}`);
-
-    if (!response.ok) {
-        throw new Error(`Failed to get image: ${response.statusText}`);
-    }
-
-    return await response.blob();
-};
-
-/**
- * Poll for workflow execution completion
- * @param promptId - The prompt ID to monitor
- * @param maxAttempts - Maximum polling attempts
- * @param intervalMs - Polling interval in milliseconds
- * @returns The completed history data
- */
+/* ===============================
+   POLLING
+================================ */
 export const pollForCompletion = async (
     promptId: string,
     maxAttempts: number = 60,
@@ -178,7 +119,7 @@ export const pollForCompletion = async (
     for (let i = 0; i < maxAttempts; i++) {
         const history = await getHistory(promptId);
 
-        if (history && history.outputs) {
+        if (history?.outputs) {
             return history;
         }
 
@@ -188,43 +129,39 @@ export const pollForCompletion = async (
     throw new Error('Workflow execution timed out');
 };
 
-/**
- * Extract the first generated image URL from history
- * @param history - The execution history
- * @returns The image data URL or null
- */
-export const extractImageFromHistory = async (history: any): Promise<string | null> => {
-    if (!history || !history.outputs) {
-        return null;
-    }
+/* ===============================
+   IMAGE EXTRACTION
+================================ */
+export const extractImageFromHistory = async (
+    history: any
+): Promise<string | null> => {
+    if (!history?.outputs) return null;
 
-    // Find the first output node with images
     for (const nodeId in history.outputs) {
         const output = history.outputs[nodeId];
 
-        if (output.images && output.images.length > 0) {
-            const imageInfo = output.images[0];
-            const blob = await getImage(
-                imageInfo.filename,
-                imageInfo.subfolder || '',
-                imageInfo.type || 'output'
-            );
+        if (output.images?.length) {
+            const img = output.images[0];
 
-            return URL.createObjectURL(blob);
+            // NOTE: this URL still points to proxy, not ComfyUI directly
+            return `${COMFY_PROXY_URL.replace(
+                '/api/comfy',
+                ''
+            )}/view?filename=${encodeURIComponent(
+                img.filename
+            )}&subfolder=${encodeURIComponent(
+                img.subfolder || ''
+            )}&type=${img.type || 'output'}`;
         }
     }
 
     return null;
 };
 
-/**
- * Load a workflow JSON file
- * @param workflowName - The workflow filename
- * @returns The workflow JSON object
- */
+/* ===============================
+   WORKFLOWS
+================================ */
 export const loadWorkflow = async (workflowName: string): Promise<any> => {
-    // For now, we'll fetch from a local workflows directory
-    // Adjust the path based on your project structure
     const response = await fetch(`/workflows/${workflowName}`);
 
     if (!response.ok) {
@@ -234,30 +171,60 @@ export const loadWorkflow = async (workflowName: string): Promise<any> => {
     return await response.json();
 };
 
-/**
- * Get list of available workflows from the workflows directory
- * @returns Array of workflow filenames
- */
 export const getAvailableWorkflows = async (): Promise<string[]> => {
     try {
         const response = await fetch('/workflows/manifest.json');
-
-        if (!response.ok) {
-            console.warn('Workflow manifest not found, returning empty list');
-            return [];
-        }
+        if (!response.ok) return [];
 
         const manifest = await response.json();
         return manifest.workflows || [];
-    } catch (error) {
-        console.error('Failed to load workflow manifest:', error);
+    } catch {
         return [];
     }
 };
 
-/**
- * Generate a unique client ID for ComfyUI
- */
+/* ===============================
+    TEST CONNECTION
+   =============================== */
+export const testConnection = async (): Promise<{ success: boolean; version?: string; error?: string }> => {
+    console.log('[ComfyUI] Testing connection to:', COMFY_PROXY_URL);
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+        const response = await fetch(`${COMFY_PROXY_URL}/system_stats`, {
+            method: 'GET',
+            signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        console.log('[ComfyUI] Connection response status:', response.status);
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('[ComfyUI] Connection successful, version:', data.version);
+        return {
+            success: true,
+            version: data.version || '1.4.2',
+        };
+    } catch (error) {
+        console.error('[ComfyUI] Connection failed:', error);
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : 'Connection failed',
+        };
+    }
+};
+
+/* ===============================
+    CLIENT ID
+   =============================== */
 const generateClientId = (): string => {
-    return `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `client_${Date.now()}_${Math.random()
+        .toString(36)
+        .slice(2, 10)}`;
 };

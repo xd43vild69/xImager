@@ -1,4 +1,5 @@
 
+/// <reference types="vite/client" />
 export enum View {
   EXECUTION = 'execution',
   HISTORY = 'history',

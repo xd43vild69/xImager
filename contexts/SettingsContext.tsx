@@ -14,7 +14,7 @@ interface SettingsContextType {
 }
 
 const defaultSettings: Settings = {
-    comfyUIServerUrl: 'http://127.0.0.1:8188',
+    comfyUIServerUrl: import.meta.env.VITE_COMFY_API_URL || 'http://127.0.0.1:8188',
     workflowDirectory: 'C:/Users/Admin/Documents/AI-Workflows',
     inputDirectory: 'D:/Data/AI-Input',
     outputDirectory: 'D:/Generations/Comfy-Output',
@@ -59,6 +59,15 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
 
         return () => clearTimeout(timeoutId);
     }, [settings]);
+
+    // Sync ComfyUI URL when settings change
+    useEffect(() => {
+        if (settings.comfyUIServerUrl) {
+            import('../services/comfyui').then(ComfyUI => {
+                ComfyUI.setServerUrl(settings.comfyUIServerUrl);
+            });
+        }
+    }, [settings.comfyUIServerUrl]);
 
     return (
         <SettingsContext.Provider value={{ settings, updateSettings, saveSettings }}>

@@ -27,10 +27,7 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
     resultUrl: null,
   });
 
-  // Update ComfyUI server URL when settings change
-  useEffect(() => {
-    ComfyUI.setServerUrl(settings.comfyUIServerUrl);
-  }, [settings.comfyUIServerUrl]);
+
 
   const addLog = (level: LogEntry['level'], message: string) => {
     const now = new Date();

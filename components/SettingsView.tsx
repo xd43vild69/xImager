@@ -1,14 +1,25 @@
 
 import React, { useState } from 'react';
 import { useSettings } from '../contexts/SettingsContext';
+import * as ComfyUI from '../services/comfyui';
 
 const SettingsView: React.FC = () => {
   const { settings, updateSettings, saveSettings } = useSettings();
-  const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('success');
+  const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
-  const handleTestConnection = () => {
+  const handleTestConnection = async () => {
     setTestStatus('testing');
-    setTimeout(() => setTestStatus('success'), 1500);
+    setErrorMessage('');
+
+    const result = await ComfyUI.testConnection();
+
+    if (result.success) {
+      setTestStatus('success');
+    } else {
+      setTestStatus('error');
+      setErrorMessage(result.error || 'Connection failed');
+    }
   };
 
   return (
@@ -70,7 +81,7 @@ const SettingsView: React.FC = () => {
                 <div className="flex-1 w-full">
                   <input
                     className="w-full bg-slate-50 dark:bg-[#1b1f27] border border-slate-200 dark:border-border-dark rounded-lg text-slate-900 dark:text-white px-4 h-12 focus:ring-1 focus:ring-primary focus:border-primary outline-none font-mono text-sm"
-                    placeholder="http://localhost:8188"
+                    placeholder={import.meta.env.VITE_COMFY_API_URL || "http://127.0.0.1:8188"}
                     type="text"
                     value={settings.comfyUIServerUrl}
                     onChange={(e) => updateSettings({ comfyUIServerUrl: e.target.value })}
