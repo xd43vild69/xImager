@@ -12,7 +12,17 @@ import * as ComfyUI from './services/comfyui';
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(View.EXECUTION);
   const [availableWorkflows, setAvailableWorkflows] = useState<string[]>([]);
-  const [selectedWorkflow, setSelectedWorkflow] = useState('SDXL_Image_Enhancer_v4.json');
+  // Initialize from localStorage or default
+  const [selectedWorkflow, setSelectedWorkflow] = useState(() => {
+    return localStorage.getItem('selectedWorkflow') || 'SDXL_Image_Enhancer_v4.json';
+  });
+
+  // Save selection to localStorage whenever it changes
+  useEffect(() => {
+    if (selectedWorkflow) {
+      localStorage.setItem('selectedWorkflow', selectedWorkflow);
+    }
+  }, [selectedWorkflow]);
 
   // Load available workflows on mount
   useEffect(() => {
@@ -20,14 +30,15 @@ const App: React.FC = () => {
       const workflows = await ComfyUI.getAvailableWorkflows();
       setAvailableWorkflows(workflows);
 
-      // Set first workflow as default if current selection doesn't exist
+      // Validate current selection against available workflows
       if (workflows.length > 0 && !workflows.includes(selectedWorkflow)) {
+        // If stored/current workflow is invalid, fallback to the first available
         setSelectedWorkflow(workflows[0]);
       }
     };
 
     loadWorkflows();
-  }, []);
+  }, [selectedWorkflow]); // Add selectedWorkflow dependency to ensure check runs correctly if state updates
 
   const renderView = () => {
     switch (currentView) {

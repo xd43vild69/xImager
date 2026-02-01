@@ -11,7 +11,16 @@ interface ExecutionViewProps {
 const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
   const { settings } = useSettings();
   const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [prompt, setPrompt] = useState('');
+
+  // Initialize prompt from localStorage
+  const [prompt, setPrompt] = useState(() => {
+    return localStorage.getItem('positivePrompt') || '';
+  });
+
+  // Save prompt to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('positivePrompt', prompt);
+  }, [prompt]);
 
   const [referenceImage, setReferenceImage] = useState<File | null>(null);
   const [referencePreview, setReferencePreview] = useState<string | null>(null);
@@ -73,7 +82,7 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
     setLogs(prev => [...prev, { timestamp, level, message }]);
   };
 
-  const runProcess = async () => {
+  const runProcess = React.useCallback(async () => {
     if (execution.isProcessing) return;
 
     const startTime = Date.now();
@@ -185,7 +194,20 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
       );
       setExecution(prev => ({ ...prev, isProcessing: false }));
     }
-  };
+  }, [execution.isProcessing, selectedWorkflow, referenceImage, prompt]);
+
+  // Handle keyboard shortcut (Cmd/Ctrl + Enter)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        e.preventDefault();
+        runProcess();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [runProcess]);
 
   return (
     <div className="flex flex-col h-full bg-slate-50 dark:bg-background-dark/50 overflow-hidden">
