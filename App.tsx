@@ -7,6 +7,7 @@ import ExecutionView from './components/ExecutionView';
 import SettingsView from './components/SettingsView';
 import HistoryView from './components/HistoryView';
 import ModelsView from './components/ModelsView';
+import KeywordsView from './components/KeywordsView';
 import * as ComfyUI from './services/comfyui';
 
 const App: React.FC = () => {
@@ -48,6 +49,8 @@ const App: React.FC = () => {
         return <HistoryView />;
       case View.MODELS:
         return <ModelsView />;
+      case View.KEYWORDS:
+        return <KeywordsView />;
       case View.SETTINGS:
         return <SettingsView />;
       default:

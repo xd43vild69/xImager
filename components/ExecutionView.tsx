@@ -120,7 +120,22 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
       addLog('LOAD', "Model 'sd_xl_base_1.0.safetensors' requested...");
 
       // Queue the prompt
-      const promptText = prompt || 'Abstract aesthetic digital art rendering, architectural forms';
+      let promptText = prompt || 'Abstract aesthetic digital art rendering, architectural forms';
+
+      // Expand keywords (e.g. @rb -> remove background)
+      if (settings.keywords) {
+        Object.entries(settings.keywords).forEach(([key, value]) => {
+          // Replace @key with value globally, handling case insensitivity or exact match
+          // Using regex to ensure we match @key boundaries if needed, or simple string replace
+          // Simple replace is safer for now, but global:
+          const regex = new RegExp(`@${key}\\b`, 'g'); // \b ensures @key expands but @keyword doesn't
+          if (regex.test(promptText)) {
+            promptText = promptText.replace(regex, value);
+            addLog('INFO', `Expanded keyword: @${key} -> "${value}"`);
+          }
+        });
+      }
+
       addLog('INFO', 'Queueing workflow execution...');
       const promptId = await ComfyUI.queuePrompt(workflow, promptText, uploadedImageFilename);
 

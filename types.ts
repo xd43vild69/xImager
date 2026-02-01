@@ -5,7 +5,8 @@ export enum View {
   HISTORY = 'history',
   MODELS = 'models',
   SETTINGS = 'settings',
-  LOGS = 'logs'
+  LOGS = 'logs',
+  KEYWORDS = 'keywords'
 }
 
 export interface LogEntry {

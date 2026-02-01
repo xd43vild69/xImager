@@ -8,12 +8,13 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange }) => {
-  const [isCollapsed, setIsCollapsed] = React.useState(false);
+  const [isCollapsed, setIsCollapsed] = React.useState(true);
 
   const navItems = [
     { id: View.EXECUTION, label: 'Execution', icon: 'dashboard' },
     { id: View.HISTORY, label: 'History', icon: 'history' },
     { id: View.MODELS, label: 'Nodes & Models', icon: 'settings_input_component' },
+    { id: View.KEYWORDS, label: 'Keywords', icon: 'translate' },
     { id: View.SETTINGS, label: 'API Settings', icon: 'api' },
   ];
 
