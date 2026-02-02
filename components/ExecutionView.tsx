@@ -3,6 +3,7 @@ import { ExecutionState, LogEntry } from '../types';
 import LogFeed from './LogFeed';
 import * as ComfyUI from '../services/comfyui';
 import { useSettings } from '../contexts/SettingsContext';
+import { recordPromptKeywords } from '../services/promptHistory';
 
 interface ExecutionViewProps {
   selectedWorkflow: string;
@@ -146,6 +147,11 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt 
             addLog('INFO', `Expanded keyword: @${key} -> "${value}"`);
           }
         });
+      }
+
+      // Record prompt keywords for history
+      if (promptText) {
+        recordPromptKeywords(promptText);
       }
 
       addLog('INFO', 'Queueing workflow execution...');

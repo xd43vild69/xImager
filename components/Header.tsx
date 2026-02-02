@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { View } from '../types';
+import PromptInput from './PromptInput';
 
 interface HeaderProps {
   selectedWorkflow: string;
@@ -61,20 +62,19 @@ const Header: React.FC<HeaderProps> = ({ selectedWorkflow, onWorkflowChange, cur
         </div>
 
         {/* Prompt Input in Header */}
-        <div className="flex-1">
-          <div className="relative group">
-            <input
-              ref={promptInputRef}
-              type="text"
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Enter positive prompt..."
-              className="w-full bg-slate-100 dark:bg-panel-dark border border-slate-200 dark:border-border-dark rounded-lg pl-3 pr-10 py-1.5 text-xs font-medium focus:ring-2 focus:ring-primary focus:outline-none transition-all hover:border-slate-300 dark:hover:border-slate-600 placeholder-slate-400"
-            />
-            <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-sm group-focus-within:text-primary">
-              edit
-            </span>
-          </div>
+        <div className="flex-1 h-10"> {/* Fixed height for textarea align */}
+          <PromptInput
+            value={prompt}
+            onChange={setPrompt}
+            onEnter={() => {
+              // Trigger execution? Header doesn't have runProcess.
+              // We can leave onEnter empty or trigger a global event?
+              // The Execute button is in the Footer.
+              // Cmd+Enter is handled by ExecutionView globally.
+            }}
+            // We need to pass the Ref for the focus shortcut
+            ref={promptInputRef}
+          />
         </div>
       </div>
     </header>
