@@ -14,15 +14,10 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt 
   const { settings } = useSettings();
   const [logs, setLogs] = useState<LogEntry[]>([]);
 
-  // Local prompt state removed, using prop
-
   const [referenceImages, setReferenceImages] = useState<Record<number, File>>({});
   const [referencePreviews, setReferencePreviews] = useState<Record<number, string>>({});
   const [referenceDimensions, setReferenceDimensions] = useState<Record<number, { width: number; height: number }>>({});
   const [resultDimensions, setResultDimensions] = useState<{ width: number; height: number } | null>(null);
-
-  const isMultiRef = selectedWorkflow.startsWith('klein_mix');
-  const requiredSlots = isMultiRef ? 2 : 1;
 
   const [execution, setExecution] = useState<ExecutionState>({
     isProcessing: false,
@@ -35,61 +30,80 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt 
     resultUrl: '/removeCharacter.jpg',
   });
 
-  // Clear dimensions when workflow changes or images change?
-  // We'll trust the img onLoad to update them.
+  const [requiredSlots, setRequiredSlots] = useState(1);
+  const isMultiInput = requiredSlots > 1;
 
-  // Handle paste events for reference images - pastes into first empty slot or slot 0
+  // Dynamic detection of slots
   useEffect(() => {
-    const handlePaste = (e: ClipboardEvent) => {
-      // Ignore if input is focused (generic check)
-      if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') {
-        return;
-      }
-
-      const items = e.clipboardData?.items;
-      if (!items) return;
-
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].type.indexOf('image') !== -1) {
-          const blob = items[i].getAsFile();
-          if (blob) {
-            // Find first empty slot
-            const targetIndex = !referenceImages[0] ? 0 : (isMultiRef && !referenceImages[1] ? 1 : 0);
-
-            setReferenceImages(prev => ({ ...prev, [targetIndex]: blob }));
-            setReferencePreviews(prev => ({ ...prev, [targetIndex]: URL.createObjectURL(blob) }));
-            // Clear dimensions for this slot until load
-            setReferenceDimensions(prev => {
-              const newDims = { ...prev };
-              delete newDims[targetIndex];
-              return newDims;
-            });
-            addLog('INFO', `Image loaded from clipboard into Slot ${targetIndex + 1}.`);
-          }
-          break;
-        }
+    const fetchWorkflow = async () => {
+      try {
+        const wf = await ComfyUI.loadWorkflow(selectedWorkflow);
+        const count = ComfyUI.countImageNodes(wf);
+        setRequiredSlots(count > 0 ? count : 1);
+        addLog('INFO', `Workflow requires ${count} input images.`);
+      } catch (e) {
+        console.error(e);
+        setRequiredSlots(1);
       }
     };
-
-    window.addEventListener('paste', handlePaste);
-    return () => window.removeEventListener('paste', handlePaste);
-  }, [referenceImages, isMultiRef]);
+    fetchWorkflow();
+  }, [selectedWorkflow]);
 
   const addLog = (level: LogEntry['level'], message: string) => {
     const now = new Date();
-    const timestamp = `${now
-      .getHours()
-      .toString()
-      .padStart(2, '0')}:${now
-        .getMinutes()
-        .toString()
-        .padStart(2, '0')}:${now
-          .getSeconds()
-          .toString()
-          .padStart(2, '0')}`;
-
+    const timestamp = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
     setLogs(prev => [...prev, { timestamp, level, message }]);
   };
+
+  const handleFileSelect = (file: File, index: number) => {
+    setReferenceImages(prev => ({ ...prev, [index]: file }));
+    setReferencePreviews(prev => ({ ...prev, [index]: URL.createObjectURL(file) }));
+    setReferenceDimensions(prev => {
+      const newDims = { ...prev };
+      delete newDims[index];
+      return newDims;
+    });
+    addLog('INFO', `Slot ${index + 1} image loaded: ${file.name}`);
+  };
+
+  const handlePasteToSlot = async (slotIndex: number) => {
+    try {
+      const items = await navigator.clipboard.read();
+      for (const item of items) {
+        const imageType = item.types.find(type => type.startsWith('image/'));
+        if (imageType) {
+          const blob = await item.getType(imageType);
+          const file = new File([blob], `pasted_image_${Date.now()}.${imageType.split('/')[1]}`, { type: imageType });
+          handleFileSelect(file, slotIndex);
+          return;
+        }
+      }
+      addLog('INFO', 'No image found in the clipboard.');
+    } catch (error) {
+      console.error('Clipboard paste error:', error);
+      addLog('ERROR', 'Failed to paste from clipboard.');
+    }
+  };
+
+  const handlePasteFromClipboard = async () => {
+    const targetIndex = !referenceImages[0] ? 0 : (isMultiInput && !referenceImages[1] ? 1 : 0);
+    handlePasteToSlot(targetIndex);
+  };
+
+  // Handle global paste
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') {
+        return;
+      }
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      handlePasteFromClipboard();
+    };
+    window.addEventListener('paste', handlePaste);
+    return () => window.removeEventListener('paste', handlePaste);
+  }, [referenceImages, isMultiInput]);
+
 
   const runProcess = React.useCallback(async () => {
     if (execution.isProcessing) return;
@@ -118,7 +132,7 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt 
       addLog('INFO', 'Workflow loaded successfully.');
 
       const uploadedFilenames: string[] = [];
-      const slots = isMultiRef ? [0, 1] : [0];
+      const slots = Array.from({ length: requiredSlots }, (_, i) => i);
 
       // Upload reference images
       for (const index of slots) {
@@ -131,14 +145,14 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt 
         }
       }
 
-      const imagesArg = uploadedFilenames.length > 0 ? uploadedFilenames : undefined;
+      const imagesArg = uploadedFilenames.filter(Boolean).length > 0 ? uploadedFilenames : undefined;
 
-      addLog('LOAD', "Model 'sd_xl_base_1.0.safetensors' requested...");
+      addLog('LOAD', "Model requested...");
 
       // Queue the prompt (using prop)
       let promptText = prompt || 'Abstract aesthetic digital art rendering, architectural forms';
 
-      // Expand keywords (e.g. @rb -> remove background)
+      // Expand keywords 
       if (settings.keywords) {
         Object.entries(settings.keywords).forEach(([key, value]) => {
           const regex = new RegExp(`@${key}\\b`, 'g');
@@ -149,7 +163,6 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt 
         });
       }
 
-      // Record prompt keywords for history
       if (promptText) {
         recordPromptKeywords(promptText);
       }
@@ -173,7 +186,7 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt 
           return;
         }
 
-        const progress = (currentStep / totalSteps) * 95; // Cap at 95% until complete
+        const progress = (currentStep / totalSteps) * 95; // Cap at 95%
         const elapsed = (Date.now() - startTime) / 1000;
 
         setExecution(prev => ({
@@ -198,9 +211,7 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt 
       const history = await ComfyUI.pollForCompletion(promptId, 120, 1000);
       clearInterval(progressInterval);
 
-      addLog('INFO', 'Generation complete. Decoding results...');
-
-      // Extract image from history
+      // Extract image
       const imageUrl = await ComfyUI.extractImageFromHistory(history);
 
       if (!imageUrl) {
@@ -227,9 +238,9 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt 
       );
       setExecution(prev => ({ ...prev, isProcessing: false }));
     }
-  }, [execution.isProcessing, selectedWorkflow, referenceImages, prompt, isMultiRef, settings.keywords]);
+  }, [execution.isProcessing, selectedWorkflow, referenceImages, prompt, requiredSlots, settings.keywords]);
 
-  // Handle keyboard shortcut (Cmd/Ctrl + Enter)
+  // Keyboard shortcut
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
@@ -237,92 +248,44 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt 
         runProcess();
       }
     };
-
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [runProcess]);
-
-  const handlePasteFromClipboard = async () => {
-    try {
-      const items = await navigator.clipboard.read();
-      for (const item of items) {
-        // Find the image type if present
-        const imageType = item.types.find(type => type.startsWith('image/'));
-        if (imageType) {
-          const blob = await item.getType(imageType);
-          // Create a File object from the Blob
-          const file = new File([blob], `pasted_image_${Date.now()}.${imageType.split('/')[1]}`, { type: imageType });
-
-          // Paste into first empty or slot 0
-          const targetIndex = !referenceImages[0] ? 0 : (isMultiRef && !referenceImages[1] ? 1 : 0);
-
-          setReferenceImages(prev => ({ ...prev, [targetIndex]: file }));
-          setReferencePreviews(prev => ({ ...prev, [targetIndex]: URL.createObjectURL(file) }));
-          // Clear dims
-          setReferenceDimensions(prev => {
-            const newDims = { ...prev };
-            delete newDims[targetIndex];
-            return newDims;
-          });
-          addLog('INFO', `Image pasted from clipboard into Slot ${targetIndex + 1}.`);
-          return;
-        }
-      }
-      addLog('INFO', 'No image found in the clipboard.');
-    } catch (error) {
-      console.error('Clipboard paste error:', error);
-      addLog('ERROR', 'Failed to paste from clipboard. Please allow clipboard access.');
-    }
-  };
-
-  // Helper to handle file selection for a specific slot
-  const handleFileSelect = (file: File, index: number) => {
-    setReferenceImages(prev => ({ ...prev, [index]: file }));
-    setReferencePreviews(prev => ({ ...prev, [index]: URL.createObjectURL(file) }));
-    setReferenceDimensions(prev => {
-      const newDims = { ...prev };
-      delete newDims[index];
-      return newDims;
-    });
-    addLog('INFO', `Slot ${index + 1} image loaded: ${file.name}`);
-  };
 
   const [isLogsCollapsed, setIsLogsCollapsed] = useState(true);
 
   return (
     <div className="flex flex-col h-full bg-slate-50 dark:bg-background-dark/50 overflow-hidden">
-      {/* Hidden file input - generic one, we'll trigger specific behavior via helper */}
       <input
         type="file"
         accept="image/png,image/jpeg,image/jpg,image/tiff"
         id="reference-input-hidden"
         className="hidden"
         onChange={e => {
-          // Simplification for now
+          // hidden global input logic if needed
         }}
       />
 
       <div className="flex-1 overflow-y-auto p-2">
         <div className="flex flex-col gap-2 h-full max-w-[1400px] mx-auto">
-          {/* Prompt Section Removed - Moved to Header */}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 flex-1 min-h-[400px]">
             {/* Reference Images */}
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
                 <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                  Reference Images {isMultiRef && '(Multi)'}
+                  Reference Images {isMultiInput && '(Multi)'}
                 </h3>
                 <button
                   onClick={handlePasteFromClipboard}
                   className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-primary transition-colors"
-                  title="Paste from Clipboard"
+                  title="Paste from Clipboard (Auto)"
                 >
                   <span className="material-symbols-outlined text-sm">content_paste</span>
                 </button>
               </div>
 
-              <div className={`grid gap-2 ${isMultiRef ? 'grid-cols-2' : 'grid-cols-1'} flex-1`}>
+              <div className={`grid gap-2 ${isMultiInput ? 'grid-cols-2' : 'grid-cols-1'} flex-1`}>
                 {Array.from({ length: requiredSlots }).map((_, index) => (
                   <div key={index} className="flex flex-col h-full">
                     <input
@@ -335,46 +298,59 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt 
                         if (file) handleFileSelect(file, index);
                       }}
                     />
-                    <div
-                      onClick={() => document.getElementById(`ref-input-${index}`)?.click()}
-                      className="flex-1 bg-slate-100 dark:bg-panel-dark border-2 border-dashed border-slate-300 dark:border-border-dark rounded-xl flex items-center justify-center cursor-pointer relative overflow-hidden shadow-inner hover:border-primary/50 transition-all min-h-[200px]"
-                    >
-                      {referencePreviews[index] ? (
-                        <div className="absolute inset-0 p-2 flex flex-col items-center justify-center">
-                          <img
-                            src={referencePreviews[index]}
-                            alt={`Reference ${index + 1}`}
-                            onLoad={(e) => {
-                              const img = e.currentTarget;
-                              setReferenceDimensions(prev => ({
-                                ...prev,
-                                [index]: { width: img.naturalWidth, height: img.naturalHeight }
-                              }));
-                            }}
-                            className="max-w-full max-h-full object-contain rounded-lg shadow-sm"
-                          />
-                        </div>
-                      ) : (
-                        <div className="text-center z-10">
-                          <div className="size-12 rounded-xl bg-slate-200 dark:bg-slate-800 flex items-center justify-center mb-3 mx-auto">
-                            <span className="material-symbols-outlined text-3xl text-slate-400">
-                              add_photo_alternate
-                            </span>
+                    <div className="relative flex-1 flex flex-col group/slot">
+                      {/* Paste Button specific to this slot */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePasteToSlot(index);
+                        }}
+                        className="absolute top-2 right-2 z-20 p-1.5 bg-white/80 dark:bg-black/50 rounded-full hover:bg-white dark:hover:bg-black text-slate-500 hover:text-primary transition-all opacity-0 group-hover/slot:opacity-100"
+                        title={`Paste into Image ${index + 1}`}
+                      >
+                        <span className="material-symbols-outlined text-sm">content_paste</span>
+                      </button>
+
+                      <div
+                        onClick={() => document.getElementById(`ref-input-${index}`)?.click()}
+                        className="flex-1 bg-slate-100 dark:bg-panel-dark border-2 border-dashed border-slate-300 dark:border-border-dark rounded-xl flex items-center justify-center cursor-pointer relative overflow-hidden shadow-inner hover:border-primary/50 transition-all min-h-[200px]"
+                      >
+                        {referencePreviews[index] ? (
+                          <div className="absolute inset-0 p-2 flex flex-col items-center justify-center">
+                            <img
+                              src={referencePreviews[index]}
+                              alt={`Reference ${index + 1}`}
+                              onLoad={(e) => {
+                                const img = e.currentTarget;
+                                setReferenceDimensions(prev => ({
+                                  ...prev,
+                                  [index]: { width: img.naturalWidth, height: img.naturalHeight }
+                                }));
+                              }}
+                              className="max-w-full max-h-full object-contain rounded-lg shadow-sm"
+                            />
                           </div>
-                          <p className="text-sm font-bold tracking-tight">
-                            {isMultiRef ? `Image ${index + 1}` : 'Drop Image'}
-                          </p>
+                        ) : (
+                          <div className="text-center z-10">
+                            <div className="size-12 rounded-xl bg-slate-200 dark:bg-slate-800 flex items-center justify-center mb-3 mx-auto">
+                              <span className="material-symbols-outlined text-3xl text-slate-400">
+                                add_photo_alternate
+                              </span>
+                            </div>
+                            <p className="text-sm font-bold tracking-tight">
+                              {isMultiInput ? `Image ${index + 1}` : 'Drop Image'}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                      {referenceDimensions[index] && (
+                        <div className="text-center mt-1">
+                          <span className="text-[10px] font-mono text-slate-400 bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded-full">
+                            {referenceDimensions[index].width} x {referenceDimensions[index].height}
+                          </span>
                         </div>
                       )}
                     </div>
-                    {/* Dimension Label */}
-                    {referenceDimensions[index] && (
-                      <div className="text-center mt-1">
-                        <span className="text-[10px] font-mono text-slate-400 bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded-full">
-                          {referenceDimensions[index].width} x {referenceDimensions[index].height}
-                        </span>
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
@@ -438,7 +414,6 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt 
                   )}
                 </div>
               </div>
-              {/* Result Dimension Label */}
               {resultDimensions && !execution.isProcessing && (
                 <div className="text-center">
                   <span className="text-[10px] font-mono text-slate-400 bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded-full">
@@ -451,10 +426,8 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt 
         </div>
       </div>
 
-      {/* Footer */}
       <footer className="bg-white dark:bg-panel-dark border-t p-2 transition-all duration-300">
         <div className="max-w-[1400px] mx-auto flex flex-col gap-2">
-          {/* Controls Header */}
           <div className="flex items-center justify-between">
             <button
               onClick={runProcess}
@@ -478,13 +451,12 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt 
             </button>
           </div>
 
-          {/* Collapsible Logs */}
           <div className={`overflow-hidden transition-all duration-300 ${isLogsCollapsed ? 'h-0 opacity-0' : 'h-32 opacity-100'}`}>
             <LogFeed logs={logs} />
           </div>
         </div>
       </footer>
-    </div>
+    </div >
   );
 };
 

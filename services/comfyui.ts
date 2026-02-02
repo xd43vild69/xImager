@@ -39,9 +39,23 @@ export const uploadImage = async (file: File): Promise<string> => {
     return data.name;
 };
 
+
+
+export const countImageNodes = (workflow: any): number => {
+    // Basic counting logic
+    let count = 0;
+    for (const nodeId in workflow) {
+        const node = workflow[nodeId];
+        if (node.class_type === 'LoadImage' || node.class_type === 'ImageLoader') {
+            count++;
+        }
+    }
+    return count;
+};
+
 /* ===============================
    QUEUE PROMPT
-================================ */
+   ================================ */
 export const queuePrompt = async (
     workflowJson: any,
     prompt: string,
@@ -49,20 +63,14 @@ export const queuePrompt = async (
 ): Promise<string> => {
     const workflow = JSON.parse(JSON.stringify(workflowJson));
 
-    // Identify image nodes
+    // Identify and sort image nodes
     const imageNodes: any[] = [];
     for (const nodeId in workflow) {
         const node = workflow[nodeId];
-        if (
-            node.class_type === 'LoadImage' ||
-            node.class_type === 'ImageLoader'
-        ) {
+        if (node.class_type === 'LoadImage' || node.class_type === 'ImageLoader') {
             imageNodes.push({ id: nodeId, node });
         }
     }
-
-    // Sort nodes to ensure deterministic assignment order (optional but recommended)
-    // Here we use simple iteration order if IDs are numeric strings "1", "2", etc
     imageNodes.sort((a, b) => {
         const idA = parseInt(a.id);
         const idB = parseInt(b.id);
