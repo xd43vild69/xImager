@@ -22,6 +22,13 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
     localStorage.setItem('positivePrompt', prompt);
   }, [prompt]);
 
+  // Apply default positive prompt when workflow changes
+  useEffect(() => {
+    // When workflow changes, clear prompt and set to default if configured, or empty.
+    const defaultPrompt = settings.workflowPrompts?.[selectedWorkflow];
+    setPrompt(defaultPrompt || '');
+  }, [selectedWorkflow, settings.workflowPrompts]);
+
   const [referenceImages, setReferenceImages] = useState<Record<number, File>>({});
   const [referencePreviews, setReferencePreviews] = useState<Record<number, string>>({});
 

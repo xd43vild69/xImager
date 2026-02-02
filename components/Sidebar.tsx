@@ -12,6 +12,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange }) => {
 
   const navItems = [
     { id: View.EXECUTION, label: 'Execution', icon: 'dashboard' },
+    { id: View.I2I_SETTINGS, label: 'I2I - Settings', icon: 'tune' },
     { id: View.KEYWORDS, label: 'Keywords', icon: 'translate' },
     { id: View.SETTINGS, label: 'API Settings', icon: 'api' },
   ];

@@ -6,6 +6,7 @@ interface Settings {
     inputDirectory: string;
     outputDirectory: string;
     keywords: Record<string, string>;
+    workflowPrompts: Record<string, string>;
 }
 
 interface SettingsContextType {
@@ -20,6 +21,7 @@ const defaultSettings: Settings = {
     inputDirectory: 'D:/Data/AI-Input',
     outputDirectory: 'D:/Generations/Comfy-Output',
     keywords: {},
+    workflowPrompts: {},
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);

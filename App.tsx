@@ -6,6 +6,7 @@ import Header from './components/Header';
 import ExecutionView from './components/ExecutionView';
 import SettingsView from './components/SettingsView';
 import KeywordsView from './components/KeywordsView';
+import I2ISettingsView from './components/I2ISettingsView';
 import * as ComfyUI from './services/comfyui';
 
 const App: React.FC = () => {
@@ -45,6 +46,8 @@ const App: React.FC = () => {
         return <ExecutionView selectedWorkflow={selectedWorkflow} />;
       case View.KEYWORDS:
         return <KeywordsView />;
+      case View.I2I_SETTINGS:
+        return <I2ISettingsView />;
       case View.SETTINGS:
         return <SettingsView />;
       default:

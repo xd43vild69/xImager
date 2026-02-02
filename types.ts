@@ -1,6 +1,7 @@
 /// <reference types="vite/client" />
 export enum View {
   EXECUTION = 'execution',
+  I2I_SETTINGS = 'i2i_settings',
   SETTINGS = 'settings',
   LOGS = 'logs',
   KEYWORDS = 'keywords'
