@@ -6,34 +6,19 @@ import { useSettings } from '../contexts/SettingsContext';
 
 interface ExecutionViewProps {
   selectedWorkflow: string;
+  prompt: string;
 }
 
-const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
+const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt }) => {
   const { settings } = useSettings();
   const [logs, setLogs] = useState<LogEntry[]>([]);
 
-  // Initialize prompt from localStorage
-  const [prompt, setPrompt] = useState(() => {
-    return localStorage.getItem('positivePrompt') || '';
-  });
-
-  // Save prompt to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('positivePrompt', prompt);
-  }, [prompt]);
-
-  // Apply default positive prompt when workflow changes
-  useEffect(() => {
-    // When workflow changes, clear prompt and set to default if configured, or empty.
-    const defaultPrompt = settings.workflowPrompts?.[selectedWorkflow];
-    setPrompt(defaultPrompt || '');
-  }, [selectedWorkflow, settings.workflowPrompts]);
+  // Local prompt state removed, using prop
 
   const [referenceImages, setReferenceImages] = useState<Record<number, File>>({});
   const [referencePreviews, setReferencePreviews] = useState<Record<number, string>>({});
-
-  // Reset references when workflow changes if mode changes? 
-  // User might want to keep image if switching workflows. logic matches single image behavior for now.
+  const [referenceDimensions, setReferenceDimensions] = useState<Record<number, { width: number; height: number }>>({});
+  const [resultDimensions, setResultDimensions] = useState<{ width: number; height: number } | null>(null);
 
   const isMultiRef = selectedWorkflow.startsWith('klein_mix');
   const requiredSlots = isMultiRef ? 2 : 1;
@@ -49,13 +34,14 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
     resultUrl: '/removeCharacter.jpg',
   });
 
-
+  // Clear dimensions when workflow changes or images change?
+  // We'll trust the img onLoad to update them.
 
   // Handle paste events for reference images - pastes into first empty slot or slot 0
   useEffect(() => {
     const handlePaste = (e: ClipboardEvent) => {
-      // Ignore if prompt textarea is focused
-      if (document.activeElement?.tagName === 'TEXTAREA') {
+      // Ignore if input is focused (generic check)
+      if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') {
         return;
       }
 
@@ -71,6 +57,12 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
 
             setReferenceImages(prev => ({ ...prev, [targetIndex]: blob }));
             setReferencePreviews(prev => ({ ...prev, [targetIndex]: URL.createObjectURL(blob) }));
+            // Clear dimensions for this slot until load
+            setReferenceDimensions(prev => {
+              const newDims = { ...prev };
+              delete newDims[targetIndex];
+              return newDims;
+            });
             addLog('INFO', `Image loaded from clipboard into Slot ${targetIndex + 1}.`);
           }
           break;
@@ -111,6 +103,7 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
       resultUrl: null,
       totalTime: '0s',
     }));
+    setResultDimensions(null); // Clear result dimensions
 
     setLogs([]);
 
@@ -137,13 +130,11 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
         }
       }
 
-      // If single mode and we have array likely [filename], clean array for single arg if desired?
-      // No, updated queuePrompt handles array or string. Array is safer.
       const imagesArg = uploadedFilenames.length > 0 ? uploadedFilenames : undefined;
 
       addLog('LOAD', "Model 'sd_xl_base_1.0.safetensors' requested...");
 
-      // Queue the prompt
+      // Queue the prompt (using prop)
       let promptText = prompt || 'Abstract aesthetic digital art rendering, architectural forms';
 
       // Expand keywords (e.g. @rb -> remove background)
@@ -261,6 +252,12 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
 
           setReferenceImages(prev => ({ ...prev, [targetIndex]: file }));
           setReferencePreviews(prev => ({ ...prev, [targetIndex]: URL.createObjectURL(file) }));
+          // Clear dims
+          setReferenceDimensions(prev => {
+            const newDims = { ...prev };
+            delete newDims[targetIndex];
+            return newDims;
+          });
           addLog('INFO', `Image pasted from clipboard into Slot ${targetIndex + 1}.`);
           return;
         }
@@ -276,10 +273,14 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
   const handleFileSelect = (file: File, index: number) => {
     setReferenceImages(prev => ({ ...prev, [index]: file }));
     setReferencePreviews(prev => ({ ...prev, [index]: URL.createObjectURL(file) }));
+    setReferenceDimensions(prev => {
+      const newDims = { ...prev };
+      delete newDims[index];
+      return newDims;
+    });
     addLog('INFO', `Slot ${index + 1} image loaded: ${file.name}`);
   };
 
-  const [isPromptCollapsed, setIsPromptCollapsed] = useState(false);
   const [isLogsCollapsed, setIsLogsCollapsed] = useState(true);
 
   return (
@@ -291,45 +292,17 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
         id="reference-input-hidden"
         className="hidden"
         onChange={e => {
-          // This is a dummy handler, actual handling logic moved to onClick of visible elements opening a specific input?
-          // React best practice: create inputs for each or manage state.
-          // Simplified: We will render inputs dynamically in the loop below.
+          // Simplification for now
         }}
       />
 
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6">
-        <div className="flex flex-col gap-6 h-full max-w-[1400px] mx-auto">
-          {/* Prompt */}
-          <div className="bg-white dark:bg-panel-dark border border-slate-200 dark:border-border-dark rounded-xl p-4 shadow-sm flex flex-col gap-3 transition-all duration-300">
-            <div className="flex items-center justify-between cursor-pointer" onClick={() => setIsPromptCollapsed(!isPromptCollapsed)}>
-              <div className="flex items-center gap-2">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                  Positive Prompt
-                </h3>
-                <span className="material-symbols-outlined text-sm text-slate-400">
-                  {isPromptCollapsed ? 'expand_more' : 'expand_less'}
-                </span>
-              </div>
-              {!isPromptCollapsed && (
-                <span className="text-[10px] text-slate-400 font-mono">
-                  CLIP_L + CLIP_G
-                </span>
-              )}
-            </div>
+      <div className="flex-1 overflow-y-auto p-2">
+        <div className="flex flex-col gap-2 h-full max-w-[1400px] mx-auto">
+          {/* Prompt Section Removed - Moved to Header */}
 
-            <div className={`overflow-hidden transition-all duration-300 ${isPromptCollapsed ? 'h-0 opacity-0' : 'h-24 opacity-100'}`}>
-              <textarea
-                value={prompt}
-                onChange={e => setPrompt(e.target.value)}
-                placeholder="Enter generation prompt here..."
-                className="w-full h-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3 text-xs sm:text-sm font-medium focus:ring-1 focus:ring-primary outline-none resize-none"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 min-h-[400px]">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 flex-1 min-h-[400px]">
             {/* Reference Images */}
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
                 <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
                   Reference Images {isMultiRef && '(Multi)'}
@@ -343,7 +316,7 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
                 </button>
               </div>
 
-              <div className={`grid gap-4 ${isMultiRef ? 'grid-cols-2' : 'grid-cols-1'} flex-1`}>
+              <div className={`grid gap-2 ${isMultiRef ? 'grid-cols-2' : 'grid-cols-1'} flex-1`}>
                 {Array.from({ length: requiredSlots }).map((_, index) => (
                   <div key={index} className="flex flex-col h-full">
                     <input
@@ -361,10 +334,17 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
                       className="flex-1 bg-slate-100 dark:bg-panel-dark border-2 border-dashed border-slate-300 dark:border-border-dark rounded-xl flex items-center justify-center cursor-pointer relative overflow-hidden shadow-inner hover:border-primary/50 transition-all min-h-[200px]"
                     >
                       {referencePreviews[index] ? (
-                        <div className="absolute inset-0 p-2 flex items-center justify-center">
+                        <div className="absolute inset-0 p-2 flex flex-col items-center justify-center">
                           <img
                             src={referencePreviews[index]}
                             alt={`Reference ${index + 1}`}
+                            onLoad={(e) => {
+                              const img = e.currentTarget;
+                              setReferenceDimensions(prev => ({
+                                ...prev,
+                                [index]: { width: img.naturalWidth, height: img.naturalHeight }
+                              }));
+                            }}
                             className="max-w-full max-h-full object-contain rounded-lg shadow-sm"
                           />
                         </div>
@@ -381,22 +361,59 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
                         </div>
                       )}
                     </div>
+                    {/* Dimension Label */}
+                    {referenceDimensions[index] && (
+                      <div className="text-center mt-1">
+                        <span className="text-[10px] font-mono text-slate-400 bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded-full">
+                          {referenceDimensions[index].width} x {referenceDimensions[index].height}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Result */}
-            <div className="flex flex-col gap-4">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                Live Result View
-              </h3>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                  Live Result View
+                </h3>
+                <button
+                  onClick={async () => {
+                    if (!execution.resultUrl) return;
+                    try {
+                      const response = await fetch(execution.resultUrl);
+                      const blob = await response.blob();
+                      await navigator.clipboard.write([
+                        new ClipboardItem({
+                          [blob.type]: blob,
+                        }),
+                      ]);
+                      addLog('INFO', 'Result image copied to clipboard.');
+                    } catch (error) {
+                      console.error('Copy failed:', error);
+                      addLog('ERROR', 'Failed to copy image to clipboard.');
+                    }
+                  }}
+                  disabled={!execution.resultUrl || execution.isProcessing}
+                  className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Copy to Clipboard"
+                >
+                  <span className="material-symbols-outlined text-sm">content_copy</span>
+                </button>
+              </div>
 
-              <div className="flex-1 bg-slate-100 dark:bg-panel-dark border rounded-xl relative overflow-hidden shadow-2xl">
-                <div className="absolute inset-0 p-2 flex items-center justify-center group">
+              <div className="flex-1 bg-slate-100 dark:bg-panel-dark border rounded-xl relative overflow-hidden shadow-2xl flex flex-col">
+                <div className="flex-1 relative p-2 flex items-center justify-center group">
                   <img
                     src={execution.resultUrl || '/removeCharacter.jpg'}
                     alt="Generation Result"
+                    onLoad={(e) => {
+                      const img = e.currentTarget;
+                      setResultDimensions({ width: img.naturalWidth, height: img.naturalHeight });
+                    }}
                     className={`max-w-full max-h-full object-contain rounded-lg transition-all duration-500 ${execution.isProcessing ? 'blur-md opacity-50 grayscale' : ''
                       }`}
                   />
@@ -415,20 +432,28 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
                   )}
                 </div>
               </div>
+              {/* Result Dimension Label */}
+              {resultDimensions && !execution.isProcessing && (
+                <div className="text-center">
+                  <span className="text-[10px] font-mono text-slate-400 bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded-full">
+                    {resultDimensions.width} x {resultDimensions.height}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
 
       {/* Footer */}
-      <footer className="bg-white dark:bg-panel-dark border-t p-4 transition-all duration-300">
+      <footer className="bg-white dark:bg-panel-dark border-t p-2 transition-all duration-300">
         <div className="max-w-[1400px] mx-auto flex flex-col gap-2">
           {/* Controls Header */}
           <div className="flex items-center justify-between">
             <button
               onClick={runProcess}
               disabled={execution.isProcessing}
-              className={`px-6 py-2.5 rounded-lg font-black text-sm uppercase tracking-wide transition-all ${execution.isProcessing
+              className={`px-4 py-1.5 rounded-lg font-black text-xs uppercase tracking-wide transition-all ${execution.isProcessing
                 ? 'bg-slate-200 text-slate-400'
                 : 'bg-primary text-white hover:bg-primary/90 active:scale-95 shadow-lg shadow-primary/25'
                 }`}

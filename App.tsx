@@ -8,14 +8,33 @@ import SettingsView from './components/SettingsView';
 import KeywordsView from './components/KeywordsView';
 import I2ISettingsView from './components/I2ISettingsView';
 import * as ComfyUI from './services/comfyui';
+import { useSettings } from './contexts/SettingsContext';
 
 const App: React.FC = () => {
+  const { settings } = useSettings();
   const [currentView, setCurrentView] = useState<View>(View.EXECUTION);
   const [availableWorkflows, setAvailableWorkflows] = useState<string[]>([]);
   // Initialize from localStorage or default
   const [selectedWorkflow, setSelectedWorkflow] = useState(() => {
     return localStorage.getItem('selectedWorkflow') || 'SDXL_Image_Enhancer_v4.json';
   });
+
+  // Initialize prompt from localStorage
+  const [prompt, setPrompt] = useState(() => {
+    return localStorage.getItem('positivePrompt') || '';
+  });
+
+  // Save prompt to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('positivePrompt', prompt);
+  }, [prompt]);
+
+  // Apply default positive prompt when workflow changes
+  useEffect(() => {
+    // When workflow changes, clear prompt and set to default if configured, or empty.
+    const defaultPrompt = settings.workflowPrompts?.[selectedWorkflow];
+    setPrompt(defaultPrompt || '');
+  }, [selectedWorkflow, settings.workflowPrompts]);
 
   // Save selection to localStorage whenever it changes
   useEffect(() => {
@@ -43,7 +62,7 @@ const App: React.FC = () => {
   const renderView = () => {
     switch (currentView) {
       case View.EXECUTION:
-        return <ExecutionView selectedWorkflow={selectedWorkflow} />;
+        return <ExecutionView selectedWorkflow={selectedWorkflow} prompt={prompt} />;
       case View.KEYWORDS:
         return <KeywordsView />;
       case View.I2I_SETTINGS:
@@ -71,6 +90,8 @@ const App: React.FC = () => {
           onWorkflowChange={setSelectedWorkflow}
           currentView={currentView}
           availableWorkflows={availableWorkflows}
+          prompt={prompt}
+          setPrompt={setPrompt}
         />
 
         <div className="flex-1 overflow-hidden relative">
