@@ -2,6 +2,7 @@
 import React from 'react';
 import { View } from '../types';
 import PromptInput from './PromptInput';
+import SearchableSelect from './SearchableSelect';
 
 interface HeaderProps {
   selectedWorkflow: string;
@@ -38,27 +39,16 @@ const Header: React.FC<HeaderProps> = ({ selectedWorkflow, onWorkflowChange, cur
 
         <div className="h-4 w-px bg-border-dark hidden sm:block"></div>
 
-        <div className="w-64 max-w-sm flex-shrink-0">
-          <label className="relative block">
-            <select
-              value={selectedWorkflow}
-              onChange={(e) => onWorkflowChange(e.target.value)}
-              className="appearance-none w-full bg-slate-100 dark:bg-panel-dark border border-slate-200 dark:border-border-dark rounded-lg px-4 py-1.5 text-xs font-bold focus:ring-2 focus:ring-primary focus:outline-none cursor-pointer transition-all hover:border-slate-300 dark:hover:border-slate-600 truncate pr-8"
-            >
-              {availableWorkflows.length > 0 ? (
-                availableWorkflows.map((workflow) => (
-                  <option key={workflow} value={workflow}>
-                    {workflow.replace('.json', '').replace(/_/g, ' ')}
-                  </option>
-                ))
-              ) : (
-                <option disabled>No workflows available</option>
-              )}
-            </select>
-            <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-base">
-              unfold_more
-            </span>
-          </label>
+        <div className="w-64 max-w-sm flex-shrink-0 relative">
+          <SearchableSelect
+            options={availableWorkflows.map(workflow => ({
+              value: workflow,
+              label: workflow.replace('.json', '').replace(/_/g, ' ')
+            }))}
+            value={selectedWorkflow}
+            onChange={onWorkflowChange}
+            className="w-full bg-slate-100 dark:bg-panel-dark border border-slate-200 dark:border-border-dark rounded-lg px-4 py-1.5 text-xs font-bold focus-within:ring-2 focus-within:ring-primary transition-all hover:border-slate-300 dark:hover:border-slate-600 h-[34px]"
+          />
         </div>
 
         {/* Prompt Input in Header */}
