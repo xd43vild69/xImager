@@ -152,6 +152,9 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt 
       // Queue the prompt (using prop)
       let promptText = prompt || 'Abstract aesthetic digital art rendering, architectural forms';
 
+      // Clean newlines (sanitize for ComfyUI)
+      promptText = promptText.replace(/[\r\n]+/g, ' ');
+
       // Expand keywords 
       if (settings.keywords) {
         Object.entries(settings.keywords).forEach(([key, value]) => {

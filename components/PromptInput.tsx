@@ -19,8 +19,14 @@ const PromptInput = React.forwardRef<HTMLTextAreaElement, PromptInputProps>(({ v
 
     const getCurrentToken = (text: string, position: number) => {
         const textBefore = text.slice(0, position);
-        const lastComma = textBefore.lastIndexOf(',');
-        const startIndex = lastComma === -1 ? 0 : lastComma + 1;
+        // Find last delimiter (comma or newline)
+        const lastDelimiterIndex = Math.max(
+            textBefore.lastIndexOf(','),
+            textBefore.lastIndexOf('\n')
+        );
+
+        const startIndex = lastDelimiterIndex === -1 ? 0 : lastDelimiterIndex + 1;
+
         return {
             text: textBefore.slice(startIndex),
             startIndex
@@ -94,8 +100,8 @@ const PromptInput = React.forwardRef<HTMLTextAreaElement, PromptInputProps>(({ v
                 onSelect={(e) => setCursorPos(e.currentTarget.selectionStart)}
                 onKeyDown={handleKeyDown}
                 placeholder="Enter positive prompt (comma separated)..."
-                className="w-full h-full bg-neutral-100 dark:bg-panel-dark border border-neutral-200 dark:border-border-dark rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-primary focus:outline-none transition-all hover:border-neutral-300 dark:hover:border-neutral-600 placeholder-neutral-400 resize-none align-middle"
-                style={{ minHeight: '32px' }}
+                className="w-full h-full bg-neutral-100 dark:bg-panel-dark border border-neutral-200 dark:border-border-dark rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-primary focus:outline-none transition-all hover:border-neutral-300 dark:hover:border-neutral-600 placeholder-neutral-400 resize-y align-top min-h-[40px] max-h-[500px] leading-relaxed whitespace-pre-wrap"
+                style={{ minHeight: '40px' }}
             />
             <span className="material-symbols-outlined absolute right-3 top-2 text-neutral-400 pointer-events-none text-sm group-focus-within:text-primary">
                 edit
