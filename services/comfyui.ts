@@ -45,14 +45,54 @@ export const uploadImage = async (file: File): Promise<string> => {
 export const queuePrompt = async (
     workflowJson: any,
     prompt: string,
-    imageFilename?: string
+    images?: string | string[]
 ): Promise<string> => {
     const workflow = JSON.parse(JSON.stringify(workflowJson));
 
+    // Identify image nodes
+    const imageNodes: any[] = [];
     for (const nodeId in workflow) {
         const node = workflow[nodeId];
+        if (
+            node.class_type === 'LoadImage' ||
+            node.class_type === 'ImageLoader'
+        ) {
+            imageNodes.push({ id: nodeId, node });
+        }
+    }
 
-        // Text prompt
+    // Sort nodes to ensure deterministic assignment order (optional but recommended)
+    // Here we use simple iteration order if IDs are numeric strings "1", "2", etc
+    imageNodes.sort((a, b) => {
+        const idA = parseInt(a.id);
+        const idB = parseInt(b.id);
+        return !isNaN(idA) && !isNaN(idB) ? idA - idB : a.id.localeCompare(b.id);
+    });
+
+    // Assign images
+    if (images) {
+        if (Array.isArray(images)) {
+            // Assign sequentially
+            images.forEach((img, index) => {
+                if (index < imageNodes.length && imageNodes[index].node.inputs?.image !== undefined) {
+                    imageNodes[index].node.inputs.image = img;
+                }
+            });
+        } else {
+            // Legacy behavior: Assign single image to ALL image nodes (or just the first?)
+            // To maintain compatibility with existing functionality where we likely only had 1 node
+            // or wanted the same ref image everywhere:
+            imageNodes.forEach((item) => {
+                if (item.node.inputs?.image !== undefined) {
+                    item.node.inputs.image = images;
+                }
+            });
+        }
+    }
+
+    // Apply text prompt
+    for (const nodeId in workflow) {
+        const node = workflow[nodeId];
         if (
             node.class_type === 'CLIPTextEncode' ||
             node.class_type === 'PromptNode' ||
@@ -60,17 +100,6 @@ export const queuePrompt = async (
         ) {
             if (node.inputs?.text !== undefined) {
                 node.inputs.text = prompt;
-            }
-        }
-
-        // Image input
-        if (
-            imageFilename &&
-            (node.class_type === 'LoadImage' ||
-                node.class_type === 'ImageLoader')
-        ) {
-            if (node.inputs?.image !== undefined) {
-                node.inputs.image = imageFilename;
             }
         }
     }

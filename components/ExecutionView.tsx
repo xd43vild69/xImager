@@ -22,8 +22,14 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
     localStorage.setItem('positivePrompt', prompt);
   }, [prompt]);
 
-  const [referenceImage, setReferenceImage] = useState<File | null>(null);
-  const [referencePreview, setReferencePreview] = useState<string | null>(null);
+  const [referenceImages, setReferenceImages] = useState<Record<number, File>>({});
+  const [referencePreviews, setReferencePreviews] = useState<Record<number, string>>({});
+
+  // Reset references when workflow changes if mode changes? 
+  // User might want to keep image if switching workflows. logic matches single image behavior for now.
+
+  const isMultiRef = selectedWorkflow.startsWith('klein_mix');
+  const requiredSlots = isMultiRef ? 2 : 1;
 
   const [execution, setExecution] = useState<ExecutionState>({
     isProcessing: false,
@@ -38,7 +44,7 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
 
 
 
-  // Handle paste events for reference images
+  // Handle paste events for reference images - pastes into first empty slot or slot 0
   useEffect(() => {
     const handlePaste = (e: ClipboardEvent) => {
       // Ignore if prompt textarea is focused
@@ -53,9 +59,12 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
         if (items[i].type.indexOf('image') !== -1) {
           const blob = items[i].getAsFile();
           if (blob) {
-            setReferenceImage(blob);
-            setReferencePreview(URL.createObjectURL(blob));
-            addLog('INFO', 'Image loaded from clipboard.');
+            // Find first empty slot
+            const targetIndex = !referenceImages[0] ? 0 : (isMultiRef && !referenceImages[1] ? 1 : 0);
+
+            setReferenceImages(prev => ({ ...prev, [targetIndex]: blob }));
+            setReferencePreviews(prev => ({ ...prev, [targetIndex]: URL.createObjectURL(blob) }));
+            addLog('INFO', `Image loaded from clipboard into Slot ${targetIndex + 1}.`);
           }
           break;
         }
@@ -64,7 +73,7 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
 
     window.addEventListener('paste', handlePaste);
     return () => window.removeEventListener('paste', handlePaste);
-  }, []);
+  }, [referenceImages, isMultiRef]);
 
   const addLog = (level: LogEntry['level'], message: string) => {
     const now = new Date();
@@ -106,16 +115,24 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
       // Load workflow JSON
       const workflow = await ComfyUI.loadWorkflow(selectedWorkflow);
       addLog('INFO', 'Workflow loaded successfully.');
-      addLog('INFO', 'Prompt validation successful.');
 
-      let uploadedImageFilename: string | undefined;
+      const uploadedFilenames: string[] = [];
+      const slots = isMultiRef ? [0, 1] : [0];
 
-      // Upload reference image if provided
-      if (referenceImage) {
-        addLog('INFO', `Uploading reference image: ${referenceImage.name}`);
-        uploadedImageFilename = await ComfyUI.uploadImage(referenceImage);
-        addLog('INFO', `Image uploaded successfully: ${uploadedImageFilename}`);
+      // Upload reference images
+      for (const index of slots) {
+        const file = referenceImages[index];
+        if (file) {
+          addLog('INFO', `Uploading reference image ${index + 1}: ${file.name}`);
+          const name = await ComfyUI.uploadImage(file);
+          uploadedFilenames[index] = name; // Ensure index alignment
+          addLog('INFO', `Image ${index + 1} uploaded: ${name}`);
+        }
       }
+
+      // If single mode and we have array likely [filename], clean array for single arg if desired?
+      // No, updated queuePrompt handles array or string. Array is safer.
+      const imagesArg = uploadedFilenames.length > 0 ? uploadedFilenames : undefined;
 
       addLog('LOAD', "Model 'sd_xl_base_1.0.safetensors' requested...");
 
@@ -125,10 +142,7 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
       // Expand keywords (e.g. @rb -> remove background)
       if (settings.keywords) {
         Object.entries(settings.keywords).forEach(([key, value]) => {
-          // Replace @key with value globally, handling case insensitivity or exact match
-          // Using regex to ensure we match @key boundaries if needed, or simple string replace
-          // Simple replace is safer for now, but global:
-          const regex = new RegExp(`@${key}\\b`, 'g'); // \b ensures @key expands but @keyword doesn't
+          const regex = new RegExp(`@${key}\\b`, 'g');
           if (regex.test(promptText)) {
             promptText = promptText.replace(regex, value);
             addLog('INFO', `Expanded keyword: @${key} -> "${value}"`);
@@ -137,7 +151,7 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
       }
 
       addLog('INFO', 'Queueing workflow execution...');
-      const promptId = await ComfyUI.queuePrompt(workflow, promptText, uploadedImageFilename);
+      const promptId = await ComfyUI.queuePrompt(workflow, promptText, imagesArg);
 
       setExecution(prev => ({ ...prev, promptId }));
       addLog('INFO', `Workflow queued with ID: ${promptId}`);
@@ -209,7 +223,7 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
       );
       setExecution(prev => ({ ...prev, isProcessing: false }));
     }
-  }, [execution.isProcessing, selectedWorkflow, referenceImage, prompt]);
+  }, [execution.isProcessing, selectedWorkflow, referenceImages, prompt, isMultiRef, settings.keywords]);
 
   // Handle keyboard shortcut (Cmd/Ctrl + Enter)
   useEffect(() => {
@@ -235,9 +249,12 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
           // Create a File object from the Blob
           const file = new File([blob], `pasted_image_${Date.now()}.${imageType.split('/')[1]}`, { type: imageType });
 
-          setReferenceImage(file);
-          setReferencePreview(URL.createObjectURL(file));
-          addLog('INFO', 'Image pasted from clipboard.');
+          // Paste into first empty or slot 0
+          const targetIndex = !referenceImages[0] ? 0 : (isMultiRef && !referenceImages[1] ? 1 : 0);
+
+          setReferenceImages(prev => ({ ...prev, [targetIndex]: file }));
+          setReferencePreviews(prev => ({ ...prev, [targetIndex]: URL.createObjectURL(file) }));
+          addLog('INFO', `Image pasted from clipboard into Slot ${targetIndex + 1}.`);
           return;
         }
       }
@@ -248,29 +265,28 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
     }
   };
 
+  // Helper to handle file selection for a specific slot
+  const handleFileSelect = (file: File, index: number) => {
+    setReferenceImages(prev => ({ ...prev, [index]: file }));
+    setReferencePreviews(prev => ({ ...prev, [index]: URL.createObjectURL(file) }));
+    addLog('INFO', `Slot ${index + 1} image loaded: ${file.name}`);
+  };
+
   const [isPromptCollapsed, setIsPromptCollapsed] = useState(false);
   const [isLogsCollapsed, setIsLogsCollapsed] = useState(true);
 
   return (
     <div className="flex flex-col h-full bg-slate-50 dark:bg-background-dark/50 overflow-hidden">
-      {/* Hidden file input */}
+      {/* Hidden file input - generic one, we'll trigger specific behavior via helper */}
       <input
         type="file"
         accept="image/png,image/jpeg,image/jpg,image/tiff"
-        id="reference-input"
+        id="reference-input-hidden"
         className="hidden"
         onChange={e => {
-          const file = e.target.files?.[0];
-          if (!file) return;
-
-          if (!file.type.startsWith('image/')) {
-            addLog('ERROR', 'Invalid file type. Please select an image.');
-            return;
-          }
-
-          setReferenceImage(file);
-          setReferencePreview(URL.createObjectURL(file));
-          addLog('INFO', `Reference image loaded: ${file.name}`);
+          // This is a dummy handler, actual handling logic moved to onClick of visible elements opening a specific input?
+          // React best practice: create inputs for each or manage state.
+          // Simplified: We will render inputs dynamically in the loop below.
         }}
       />
 
@@ -305,11 +321,11 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 min-h-[400px]">
-            {/* Reference Image */}
+            {/* Reference Images */}
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                  Reference Images
+                  Reference Images {isMultiRef && '(Multi)'}
                 </h3>
                 <button
                   onClick={handlePasteFromClipboard}
@@ -320,35 +336,46 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
                 </button>
               </div>
 
-              <div
-                onClick={() =>
-                  document.getElementById('reference-input')?.click()
-                }
-                className="flex-1 bg-slate-100 dark:bg-panel-dark border-2 border-dashed border-slate-300 dark:border-border-dark rounded-xl flex items-center justify-center cursor-pointer relative overflow-hidden shadow-inner hover:border-primary/50 transition-all"
-              >
-                {referencePreview ? (
-                  <div className="absolute inset-0 p-2 flex items-center justify-center">
-                    <img
-                      src={referencePreview}
-                      alt="Reference"
-                      className="max-w-full max-h-full object-contain rounded-lg shadow-sm"
+              <div className={`grid gap-4 ${isMultiRef ? 'grid-cols-2' : 'grid-cols-1'} flex-1`}>
+                {Array.from({ length: requiredSlots }).map((_, index) => (
+                  <div key={index} className="flex flex-col h-full">
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/jpg,image/tiff"
+                      id={`ref-input-${index}`}
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFileSelect(file, index);
+                      }}
                     />
-                  </div>
-                ) : (
-                  <div className="text-center z-10">
-                    <div className="size-16 rounded-2xl bg-slate-200 dark:bg-slate-800 flex items-center justify-center mb-4">
-                      <span className="material-symbols-outlined text-4xl text-slate-400">
-                        add_photo_alternate
-                      </span>
+                    <div
+                      onClick={() => document.getElementById(`ref-input-${index}`)?.click()}
+                      className="flex-1 bg-slate-100 dark:bg-panel-dark border-2 border-dashed border-slate-300 dark:border-border-dark rounded-xl flex items-center justify-center cursor-pointer relative overflow-hidden shadow-inner hover:border-primary/50 transition-all min-h-[200px]"
+                    >
+                      {referencePreviews[index] ? (
+                        <div className="absolute inset-0 p-2 flex items-center justify-center">
+                          <img
+                            src={referencePreviews[index]}
+                            alt={`Reference ${index + 1}`}
+                            className="max-w-full max-h-full object-contain rounded-lg shadow-sm"
+                          />
+                        </div>
+                      ) : (
+                        <div className="text-center z-10">
+                          <div className="size-12 rounded-xl bg-slate-200 dark:bg-slate-800 flex items-center justify-center mb-3 mx-auto">
+                            <span className="material-symbols-outlined text-3xl text-slate-400">
+                              add_photo_alternate
+                            </span>
+                          </div>
+                          <p className="text-sm font-bold tracking-tight">
+                            {isMultiRef ? `Image ${index + 1}` : 'Drop Image'}
+                          </p>
+                        </div>
+                      )}
                     </div>
-                    <p className="text-base font-bold tracking-tight">
-                      Drop reference file
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1">
-                      Accepts PNG, JPG, TIFF
-                    </p>
                   </div>
-                )}
+                ))}
               </div>
             </div>
 
