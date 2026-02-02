@@ -82,7 +82,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100">
+    <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark text-neutral-900 dark:text-neutral-100">
       {/* Sidebar: passes current view and updater. Note: If modal is open, sidebar highlights it. */}
       <Sidebar currentView={currentView} onViewChange={setCurrentView} />
 

@@ -72,18 +72,18 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                 className={`flex items-center justify-between cursor-pointer ${className}`}
             >
                 <span className="truncate flex-1">{selectedLabel}</span>
-                <span className="material-symbols-outlined text-slate-400 text-base">
+                <span className="material-symbols-outlined text-neutral-400 text-base">
                     unfold_more
                 </span>
             </div>
 
             {/* Dropdown Menu */}
             {isOpen && (
-                <div className="absolute top-full left-0 w-full mt-1 bg-white dark:bg-panel-dark border border-slate-200 dark:border-border-dark rounded-lg shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100 flex flex-col max-h-[400px]">
+                <div className="absolute top-full left-0 w-full mt-1 bg-white dark:bg-panel-dark border border-neutral-200 dark:border-border-dark rounded-lg shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100 flex flex-col max-h-[400px]">
                     {/* Search Input */}
-                    <div className="p-2 border-b border-slate-100 dark:border-border-dark bg-slate-50 dark:bg-black/20 sticky top-0 z-10">
-                        <div className="flex items-center gap-2 bg-white dark:bg-slate-800 rounded px-2 border border-slate-200 dark:border-slate-700">
-                            <span className="material-symbols-outlined text-slate-400 text-sm">search</span>
+                    <div className="p-2 border-b border-neutral-100 dark:border-border-dark bg-neutral-50 dark:bg-black/20 sticky top-0 z-10">
+                        <div className="flex items-center gap-2 bg-white dark:bg-neutral-800 rounded px-2 border border-neutral-200 dark:border-neutral-700">
+                            <span className="material-symbols-outlined text-neutral-400 text-sm">search</span>
                             <input
                                 ref={searchInputRef}
                                 type="text"
@@ -98,7 +98,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                     {/* Options List */}
                     <div className="overflow-y-auto flex-1 p-1">
                         {options.length === 0 ? (
-                            <div className="p-4 text-center text-slate-400 text-xs">No options available</div>
+                            <div className="p-4 text-center text-neutral-400 text-xs">No options available</div>
                         ) : filteredOptions.length > 0 ? (
                             filteredOptions.map(option => (
                                 <div
@@ -107,7 +107,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                                     className={`px-3 py-2 text-sm rounded cursor-pointer transition-colors flex items-center justify-between
                                         ${option.value === value
                                             ? 'bg-primary/10 text-primary font-bold'
-                                            : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+                                            : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300'
                                         }
                                     `}
                                 >
@@ -118,7 +118,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                                 </div>
                             ))
                         ) : (
-                            <div className="p-4 text-center text-slate-400 text-xs">
+                            <div className="p-4 text-center text-neutral-400 text-xs">
                                 No matching workflows found
                             </div>
                         )}

@@ -43,14 +43,14 @@ const KeywordsManager: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col h-full bg-slate-50 dark:bg-background-dark/50 p-6 overflow-hidden">
+        <div className="flex flex-col h-full bg-neutral-50 dark:bg-background-dark/50 p-6 overflow-hidden">
             <div className="max-w-4xl mx-auto w-full flex flex-col gap-6 h-full">
 
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-black text-slate-800 dark:text-gray-100">Autocompleter</h1>
-                        <p className="text-slate-500 text-sm">Manage autocomplete dictionary</p>
+                        <h1 className="text-2xl font-black text-neutral-800 dark:text-gray-100">Autocompleter</h1>
+                        <p className="text-neutral-500 text-sm">Manage autocomplete dictionary</p>
                     </div>
                     <button
                         onClick={() => setIsAddMode(true)}
@@ -63,26 +63,26 @@ const KeywordsManager: React.FC = () => {
 
                 {/* Add Modal / Form */}
                 {isAddMode && (
-                    <div className="bg-white dark:bg-panel-dark p-4 rounded-xl shadow-lg border border-slate-200 dark:border-border-dark flex items-end gap-3 animate-in fade-in slide-in-from-top-2">
+                    <div className="bg-white dark:bg-panel-dark p-4 rounded-xl shadow-lg border border-neutral-200 dark:border-border-dark flex items-end gap-3 animate-in fade-in slide-in-from-top-2">
                         <div className="flex-1">
-                            <label className="block text-xs font-bold text-slate-400 mb-1 uppercase">Keyword</label>
+                            <label className="block text-xs font-bold text-neutral-400 mb-1 uppercase">Keyword</label>
                             <input
                                 autoFocus
                                 type="text"
                                 value={newKeyword.text}
                                 onChange={e => setNewKeyword({ ...newKeyword, text: e.target.value })}
-                                className="w-full bg-slate-100 dark:bg-background-dark border border-slate-200 dark:border-border-dark rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none"
+                                className="w-full bg-neutral-100 dark:bg-background-dark border border-neutral-200 dark:border-border-dark rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none"
                                 placeholder="e.g. cinematic lighting"
                             />
                         </div>
                         <div className="w-24">
-                            <label className="block text-xs font-bold text-slate-400 mb-1 uppercase">Count</label>
+                            <label className="block text-xs font-bold text-neutral-400 mb-1 uppercase">Count</label>
                             <input
                                 type="number"
                                 min="0"
                                 value={newKeyword.count}
                                 onChange={e => setNewKeyword({ ...newKeyword, count: parseInt(e.target.value) || 0 })}
-                                className="w-full bg-slate-100 dark:bg-background-dark border border-slate-200 dark:border-border-dark rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none text-center"
+                                className="w-full bg-neutral-100 dark:bg-background-dark border border-neutral-200 dark:border-border-dark rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none text-center"
                             />
                         </div>
                         <div className="flex gap-2">
@@ -95,7 +95,7 @@ const KeywordsManager: React.FC = () => {
                             </button>
                             <button
                                 onClick={() => setIsAddMode(false)}
-                                className="bg-slate-200 dark:bg-slate-700 text-slate-500 p-2 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
+                                className="bg-neutral-200 dark:bg-neutral-700 text-neutral-500 p-2 rounded-lg hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors"
                                 title="Cancel"
                             >
                                 <span className="material-symbols-outlined">close</span>
@@ -105,29 +105,29 @@ const KeywordsManager: React.FC = () => {
                 )}
 
                 {/* Filters */}
-                <div className="flex items-center gap-4 bg-white dark:bg-panel-dark p-3 rounded-xl border border-slate-200 dark:border-border-dark shadow-sm">
+                <div className="flex items-center gap-4 bg-white dark:bg-panel-dark p-3 rounded-xl border border-neutral-200 dark:border-border-dark shadow-sm">
                     <div className="flex-1 relative">
-                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">search</span>
                         <input
                             type="text"
                             placeholder="Search keywords..."
                             value={filter}
                             onChange={e => setFilter(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 bg-transparent text-sm focus:outline-none placeholder-slate-400"
+                            className="w-full pl-10 pr-4 py-2 bg-transparent text-sm focus:outline-none placeholder-neutral-400"
                         />
                     </div>
-                    <div className="h-6 w-px bg-slate-200 dark:bg-border-dark"></div>
-                    <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
+                    <div className="h-6 w-px bg-neutral-200 dark:bg-border-dark"></div>
+                    <div className="flex items-center gap-2 text-xs font-bold text-neutral-500">
                         <span>Sort by:</span>
                         <button
                             onClick={() => setSortBy('count')}
-                            className={`px-3 py-1 rounded-md transition-colors ${sortBy === 'count' ? 'bg-primary/10 text-primary' : 'hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            className={`px-3 py-1 rounded-md transition-colors ${sortBy === 'count' ? 'bg-primary/10 text-primary' : 'hover:bg-neutral-100 dark:hover:bg-neutral-800'}`}
                         >
                             Count
                         </button>
                         <button
                             onClick={() => setSortBy('lastUsed')}
-                            className={`px-3 py-1 rounded-md transition-colors ${sortBy === 'lastUsed' ? 'bg-primary/10 text-primary' : 'hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            className={`px-3 py-1 rounded-md transition-colors ${sortBy === 'lastUsed' ? 'bg-primary/10 text-primary' : 'hover:bg-neutral-100 dark:hover:bg-neutral-800'}`}
                         >
                             Recent
                         </button>
@@ -135,23 +135,23 @@ const KeywordsManager: React.FC = () => {
                 </div>
 
                 {/* List */}
-                <div className="flex-1 overflow-y-auto bg-white dark:bg-panel-dark rounded-xl border border-slate-200 dark:border-border-dark shadow-sm">
+                <div className="flex-1 overflow-y-auto bg-white dark:bg-panel-dark rounded-xl border border-neutral-200 dark:border-border-dark shadow-sm">
                     <table className="w-full text-left border-collapse">
-                        <thead className="bg-slate-50 dark:bg-slate-800/50 sticky top-0 z-10 backdrop-blur-sm">
+                        <thead className="bg-neutral-50 dark:bg-neutral-800/50 sticky top-0 z-10 backdrop-blur-sm">
                             <tr>
-                                <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider w-1/2">Keyword</th>
-                                <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-center w-24">Uses</th>
-                                <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Last Used</th>
-                                <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right w-24">Actions</th>
+                                <th className="p-4 text-xs font-bold text-neutral-400 uppercase tracking-wider w-1/2">Keyword</th>
+                                <th className="p-4 text-xs font-bold text-neutral-400 uppercase tracking-wider text-center w-24">Uses</th>
+                                <th className="p-4 text-xs font-bold text-neutral-400 uppercase tracking-wider text-right">Last Used</th>
+                                <th className="p-4 text-xs font-bold text-neutral-400 uppercase tracking-wider text-right w-24">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+                        <tbody className="divide-y divide-neutral-100 dark:divide-white/5">
                             {filteredKeywords.map(k => (
                                 <KeywordRow key={k.text} keyword={k} onRefresh={refresh} />
                             ))}
                             {filteredKeywords.length === 0 && (
                                 <tr>
-                                    <td colSpan={4} className="p-8 text-center text-slate-400 text-sm">
+                                    <td colSpan={4} className="p-8 text-center text-neutral-400 text-sm">
                                         No keywords found matching "{filter}"
                                     </td>
                                 </tr>
@@ -195,7 +195,7 @@ const KeywordRow: React.FC<{ keyword: KeywordStat, onRefresh: () => void }> = ({
             <tr className="bg-primary/5">
                 <td className="p-3">
                     <input
-                        className="w-full bg-white dark:bg-background-dark border border-slate-300 dark:border-border-dark rounded px-2 py-1 text-sm focus:ring-2 focus:ring-primary outline-none"
+                        className="w-full bg-white dark:bg-background-dark border border-neutral-300 dark:border-border-dark rounded px-2 py-1 text-sm focus:ring-2 focus:ring-primary outline-none"
                         value={editValues.text}
                         onChange={e => setEditValues({ ...editValues, text: e.target.value })}
                         autoFocus
@@ -204,12 +204,12 @@ const KeywordRow: React.FC<{ keyword: KeywordStat, onRefresh: () => void }> = ({
                 <td className="p-3 text-center">
                     <input
                         type="number"
-                        className="w-16 bg-white dark:bg-background-dark border border-slate-300 dark:border-border-dark rounded px-2 py-1 text-sm text-center focus:ring-2 focus:ring-primary outline-none"
+                        className="w-16 bg-white dark:bg-background-dark border border-neutral-300 dark:border-border-dark rounded px-2 py-1 text-sm text-center focus:ring-2 focus:ring-primary outline-none"
                         value={editValues.count}
                         onChange={e => setEditValues({ ...editValues, count: parseInt(e.target.value) || 0 })}
                     />
                 </td>
-                <td className="p-3 text-right text-sm text-slate-500">
+                <td className="p-3 text-right text-sm text-neutral-500">
                     -
                 </td>
                 <td className="p-3 text-right">
@@ -217,7 +217,7 @@ const KeywordRow: React.FC<{ keyword: KeywordStat, onRefresh: () => void }> = ({
                         <button onClick={handleSave} className="text-green-500 hover:bg-green-500/10 p-1.5 rounded-full transition-colors">
                             <span className="material-symbols-outlined text-lg">check</span>
                         </button>
-                        <button onClick={() => setIsEditing(false)} className="text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700/50 p-1.5 rounded-full transition-colors">
+                        <button onClick={() => setIsEditing(false)} className="text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700/50 p-1.5 rounded-full transition-colors">
                             <span className="material-symbols-outlined text-lg">close</span>
                         </button>
                     </div>
@@ -227,16 +227,16 @@ const KeywordRow: React.FC<{ keyword: KeywordStat, onRefresh: () => void }> = ({
     }
 
     return (
-        <tr className="group hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
-            <td className="p-4 text-sm font-medium text-slate-700 dark:text-slate-200">
+        <tr className="group hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors">
+            <td className="p-4 text-sm font-medium text-neutral-700 dark:text-neutral-200">
                 {keyword.text}
             </td>
             <td className="p-4 text-center">
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
                     {keyword.count}
                 </span>
             </td>
-            <td className="p-4 text-sm text-right text-slate-500 font-mono">
+            <td className="p-4 text-sm text-right text-neutral-500 font-mono">
                 {timeAgo(keyword.lastUsed)}
             </td>
             <td className="p-4 text-right">
@@ -246,7 +246,7 @@ const KeywordRow: React.FC<{ keyword: KeywordStat, onRefresh: () => void }> = ({
                             setEditValues({ text: keyword.text, count: keyword.count });
                             setIsEditing(true);
                         }}
-                        className="text-slate-400 hover:text-primary transition-colors p-1"
+                        className="text-neutral-400 hover:text-primary transition-colors p-1"
                         title="Edit"
                     >
                         <span className="material-symbols-outlined text-lg">edit</span>
@@ -257,7 +257,7 @@ const KeywordRow: React.FC<{ keyword: KeywordStat, onRefresh: () => void }> = ({
                                 deleteKeyword(keyword.text).then(onRefresh);
                             }
                         }}
-                        className="text-slate-400 hover:text-red-500 transition-colors p-1"
+                        className="text-neutral-400 hover:text-red-500 transition-colors p-1"
                         title="Delete"
                     >
                         <span className="material-symbols-outlined text-lg">delete</span>

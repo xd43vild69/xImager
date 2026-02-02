@@ -255,7 +255,7 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt 
   const [isLogsCollapsed, setIsLogsCollapsed] = useState(true);
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 dark:bg-background-dark/50 overflow-hidden">
+    <div className="flex flex-col h-full bg-neutral-50 dark:bg-background-dark/50 overflow-hidden">
       <input
         type="file"
         accept="image/png,image/jpeg,image/jpg,image/tiff"
@@ -273,12 +273,12 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt 
             {/* Reference Images */}
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400">
                   Reference Images {isMultiInput && '(Multi)'}
                 </h3>
                 <button
                   onClick={handlePasteFromClipboard}
-                  className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-primary transition-colors"
+                  className="p-1.5 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-primary transition-colors"
                   title="Paste from Clipboard (Auto)"
                 >
                   <span className="material-symbols-outlined text-sm">content_paste</span>
@@ -305,7 +305,7 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt 
                           e.stopPropagation();
                           handlePasteToSlot(index);
                         }}
-                        className="absolute top-2 right-2 z-20 p-1.5 bg-white/80 dark:bg-black/50 rounded-full hover:bg-white dark:hover:bg-black text-slate-500 hover:text-primary transition-all opacity-0 group-hover/slot:opacity-100"
+                        className="absolute top-2 right-2 z-20 p-1.5 bg-white/80 dark:bg-black/50 rounded-full hover:bg-white dark:hover:bg-black text-neutral-500 hover:text-primary transition-all opacity-0 group-hover/slot:opacity-100"
                         title={`Paste into Image ${index + 1}`}
                       >
                         <span className="material-symbols-outlined text-sm">content_paste</span>
@@ -313,7 +313,7 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt 
 
                       <div
                         onClick={() => document.getElementById(`ref-input-${index}`)?.click()}
-                        className="flex-1 bg-slate-100 dark:bg-panel-dark border-2 border-dashed border-slate-300 dark:border-border-dark rounded-xl flex items-center justify-center cursor-pointer relative overflow-hidden shadow-inner hover:border-primary/50 transition-all min-h-[200px]"
+                        className="flex-1 bg-neutral-100 dark:bg-panel-dark border-2 border-dashed border-neutral-300 dark:border-border-dark rounded-xl flex items-center justify-center cursor-pointer relative overflow-hidden shadow-inner hover:border-primary/50 transition-all min-h-[200px]"
                       >
                         {referencePreviews[index] ? (
                           <div className="absolute inset-0 p-2 flex flex-col items-center justify-center">
@@ -332,8 +332,8 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt 
                           </div>
                         ) : (
                           <div className="text-center z-10">
-                            <div className="size-12 rounded-xl bg-slate-200 dark:bg-slate-800 flex items-center justify-center mb-3 mx-auto">
-                              <span className="material-symbols-outlined text-3xl text-slate-400">
+                            <div className="size-12 rounded-xl bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center mb-3 mx-auto">
+                              <span className="material-symbols-outlined text-3xl text-neutral-400">
                                 add_photo_alternate
                               </span>
                             </div>
@@ -345,7 +345,7 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt 
                       </div>
                       {referenceDimensions[index] && (
                         <div className="text-center mt-1">
-                          <span className="text-[10px] font-mono text-slate-400 bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded-full">
+                          <span className="text-[10px] font-mono text-neutral-400 bg-neutral-100 dark:bg-white/5 px-2 py-0.5 rounded-full">
                             {referenceDimensions[index].width} x {referenceDimensions[index].height}
                           </span>
                         </div>
@@ -359,7 +359,7 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt 
             {/* Result */}
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400">
                   Output
                 </h3>
                 <button
@@ -380,14 +380,14 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt 
                     }
                   }}
                   disabled={!execution.resultUrl || execution.isProcessing}
-                  className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-1.5 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   title="Copy to Clipboard"
                 >
                   <span className="material-symbols-outlined text-sm">content_copy</span>
                 </button>
               </div>
 
-              <div className="flex-1 bg-slate-100 dark:bg-panel-dark border rounded-xl relative overflow-hidden shadow-2xl flex flex-col">
+              <div className="flex-1 bg-neutral-100 dark:bg-panel-dark border rounded-xl relative overflow-hidden shadow-2xl flex flex-col">
                 <div className="flex-1 relative p-2 flex items-center justify-center group">
                   <img
                     src={execution.resultUrl || '/removeCharacter.jpg'}
@@ -416,7 +416,7 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt 
               </div>
               {resultDimensions && !execution.isProcessing && (
                 <div className="text-center">
-                  <span className="text-[10px] font-mono text-slate-400 bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded-full">
+                  <span className="text-[10px] font-mono text-neutral-400 bg-neutral-100 dark:bg-white/5 px-2 py-0.5 rounded-full">
                     {resultDimensions.width} x {resultDimensions.height}
                   </span>
                 </div>
@@ -433,7 +433,7 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt 
               onClick={runProcess}
               disabled={execution.isProcessing}
               className={`px-4 py-1.5 rounded-lg font-black text-xs uppercase tracking-wide transition-all ${execution.isProcessing
-                ? 'bg-slate-200 text-slate-400'
+                ? 'bg-neutral-200 text-neutral-400'
                 : 'bg-primary text-white hover:bg-primary/90 active:scale-95 shadow-lg shadow-primary/25'
                 }`}
             >
@@ -442,7 +442,7 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt 
 
             <button
               onClick={() => setIsLogsCollapsed(!isLogsCollapsed)}
-              className="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-primary transition-colors"
+              className="flex items-center gap-2 text-xs font-bold text-neutral-400 hover:text-primary transition-colors"
             >
               {isLogsCollapsed ? 'Show Logs' : 'Hide Logs'}
               <span className="material-symbols-outlined text-sm">

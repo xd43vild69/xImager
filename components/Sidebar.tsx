@@ -29,7 +29,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange }) => {
       {/* Collapse Toggle Button */}
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute -right-3 top-8 bg-background-light dark:bg-slate-800 border border-border-dark rounded-full p-1 text-slate-500 hover:text-primary transition-colors shadow-sm z-50"
+        className="absolute -right-3 top-8 bg-background-light dark:bg-neutral-800 border border-border-dark rounded-full p-1 text-neutral-500 hover:text-primary transition-colors shadow-sm z-50"
       >
         <span className="material-symbols-outlined text-[16px]">
           {isCollapsed ? 'chevron_right' : 'chevron_left'}
@@ -44,7 +44,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange }) => {
           {!isCollapsed && (
             <div className="flex flex-col overflow-hidden whitespace-nowrap">
               <h1 className="text-base font-bold leading-none tracking-tight">xOrchestrator</h1>
-              <p className="text-slate-500 text-xs font-medium">Engine v0.1</p>
+              <p className="text-neutral-500 text-xs font-medium">Engine v0.1</p>
             </div>
           )}
         </div>
@@ -60,7 +60,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange }) => {
                 ${isCollapsed ? 'justify-center' : ''}
                 ${currentView === item.id
                   ? 'bg-primary/10 text-primary shadow-sm'
-                  : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800'
                 }
               `}
             >
@@ -79,17 +79,17 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange }) => {
 
       <div className={`${isCollapsed ? 'px-2' : 'px-4'}`}>
         {!isCollapsed ? (
-          <div className="bg-slate-100 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl p-4 flex flex-col gap-3 border border-slate-200 dark:border-white/5 transition-all duration-300">
+          <div className="bg-neutral-100 dark:bg-neutral-800/80 backdrop-blur-sm rounded-xl p-4 flex flex-col gap-3 border border-neutral-200 dark:border-white/5 transition-all duration-300">
             <div className="flex items-center justify-between">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">GPU Status</p>
+              <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">GPU Status</p>
               <span className="flex h-2 w-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>
             </div>
             <div className="space-y-1.5">
               <div className="flex justify-between text-[11px] font-medium">
                 <span>RTX 4070Ti</span>
-                <span className="text-slate-400">12GB VRAM</span>
+                <span className="text-neutral-400">12GB VRAM</span>
               </div>
-              <div className="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
+              <div className="w-full bg-neutral-200 dark:bg-neutral-700 h-1.5 rounded-full overflow-hidden">
                 <div className="bg-primary h-full w-[12%] transition-all duration-1000"></div>
               </div>
             </div>

@@ -94,24 +94,24 @@ const PromptInput = React.forwardRef<HTMLTextAreaElement, PromptInputProps>(({ v
                 onSelect={(e) => setCursorPos(e.currentTarget.selectionStart)}
                 onKeyDown={handleKeyDown}
                 placeholder="Enter positive prompt (comma separated)..."
-                className="w-full h-full bg-slate-100 dark:bg-panel-dark border border-slate-200 dark:border-border-dark rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-primary focus:outline-none transition-all hover:border-slate-300 dark:hover:border-slate-600 placeholder-slate-400 resize-none align-middle"
+                className="w-full h-full bg-neutral-100 dark:bg-panel-dark border border-neutral-200 dark:border-border-dark rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-primary focus:outline-none transition-all hover:border-neutral-300 dark:hover:border-neutral-600 placeholder-neutral-400 resize-none align-middle"
                 style={{ minHeight: '32px' }}
             />
-            <span className="material-symbols-outlined absolute right-3 top-2 text-slate-400 pointer-events-none text-sm group-focus-within:text-primary">
+            <span className="material-symbols-outlined absolute right-3 top-2 text-neutral-400 pointer-events-none text-sm group-focus-within:text-primary">
                 edit
             </span>
 
             {showSuggestions && (
-                <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-panel-dark border border-slate-200 dark:border-border-dark rounded-lg shadow-xl z-50 overflow-hidden max-h-60 overflow-y-auto">
+                <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-panel-dark border border-neutral-200 dark:border-border-dark rounded-lg shadow-xl z-50 overflow-hidden max-h-60 overflow-y-auto">
                     {suggestions.map((s, i) => (
                         <div
                             key={s.text}
-                            className={`px-3 py-2 text-xs cursor-pointer flex justify-between items-center ${i === selectedIndex ? 'bg-primary/10 text-primary' : 'hover:bg-slate-50 dark:hover:bg-white/5'}`}
+                            className={`px-3 py-2 text-xs cursor-pointer flex justify-between items-center ${i === selectedIndex ? 'bg-primary/10 text-primary' : 'hover:bg-neutral-50 dark:hover:bg-white/5'}`}
                             onClick={() => handleSelect(s.text)}
                             onMouseEnter={() => setSelectedIndex(i)}
                         >
                             <span className="font-medium">{s.text}</span>
-                            <span className="text-[10px] text-slate-400 opacity-75">{s.count} uses</span>
+                            <span className="text-[10px] text-neutral-400 opacity-75">{s.count} uses</span>
                         </div>
                     ))}
                 </div>

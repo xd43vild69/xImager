@@ -33,7 +33,7 @@ const Modal: React.FC<ModalProps> = ({ children, onClose, title, maxWidth = 'max
 
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 z-50 p-2 rounded-full bg-slate-100 dark:bg-black/20 text-slate-400 hover:text-red-500 hover:bg-slate-200 dark:hover:bg-black/40 transition-all shadow-sm"
+                    className="absolute top-4 right-4 z-50 p-2 rounded-full bg-neutral-100 dark:bg-black/20 text-neutral-400 hover:text-red-500 hover:bg-neutral-200 dark:hover:bg-black/40 transition-all shadow-sm"
                     title="Close"
                 >
                     <span className="material-symbols-outlined text-xl font-bold">close</span>

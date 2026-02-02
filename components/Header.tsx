@@ -32,7 +32,7 @@ const Header: React.FC<HeaderProps> = ({ selectedWorkflow, onWorkflowChange, cur
   return (
     <header className="h-16 border-b border-border-dark bg-background-light dark:bg-background-dark px-6 flex items-center justify-between z-10 gap-4">
       <div className="flex items-center gap-4 flex-1">
-        <div className="flex items-center gap-2 text-slate-400">
+        <div className="flex items-center gap-2 text-neutral-400">
           <span className="material-symbols-outlined text-sm">folder_open</span>
           <span className="text-[10px] font-bold uppercase tracking-widest whitespace-nowrap hidden sm:inline">Workflow:</span>
         </div>
@@ -47,7 +47,7 @@ const Header: React.FC<HeaderProps> = ({ selectedWorkflow, onWorkflowChange, cur
             }))}
             value={selectedWorkflow}
             onChange={onWorkflowChange}
-            className="w-full bg-slate-100 dark:bg-panel-dark border border-slate-200 dark:border-border-dark rounded-lg px-4 py-1.5 text-xs font-bold focus-within:ring-2 focus-within:ring-primary transition-all hover:border-slate-300 dark:hover:border-slate-600 h-[34px]"
+            className="w-full bg-neutral-100 dark:bg-panel-dark border border-neutral-200 dark:border-border-dark rounded-lg px-4 py-1.5 text-xs font-bold focus-within:ring-2 focus-within:ring-primary transition-all hover:border-neutral-300 dark:hover:border-neutral-600 h-[34px]"
           />
         </div>
 
