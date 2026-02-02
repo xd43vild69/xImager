@@ -1,0 +1,210 @@
+{
+  "7": {
+    "inputs": {
+      "text": "blurry ugly bad",
+      "clip": [
+        "18",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Negative Prompt)"
+    }
+  },
+  "9": {
+    "inputs": {
+      "filename_prefix": [
+        "74",
+        0
+      ],
+      "images": [
+        "54",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  },
+  "17": {
+    "inputs": {
+      "vae_name": "ae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "18": {
+    "inputs": {
+      "clip_name": "qwen_3_4b.safetensors",
+      "type": "lumina2",
+      "device": "cpu"
+    },
+    "class_type": "CLIPLoader",
+    "_meta": {
+      "title": "Load CLIP"
+    }
+  },
+  "28": {
+    "inputs": {
+      "gguf_name": "z_image_turbo-Q8_0.gguf",
+      "dequant_dtype": "default",
+      "patch_dtype": "default",
+      "patch_on_device": false
+    },
+    "class_type": "LoaderGGUFAdvanced",
+    "_meta": {
+      "title": "GGUF Loader (Advanced)"
+    }
+  },
+  "48": {
+    "inputs": {
+      "seed": 771657904206505,
+      "steps": 8,
+      "cfg": 1,
+      "sampler_name": "ddim",
+      "scheduler": "beta",
+      "denoise": 0.55,
+      "model": [
+        "52",
+        0
+      ],
+      "positive": [
+        "53",
+        0
+      ],
+      "negative": [
+        "7",
+        0
+      ],
+      "latent_image": [
+        "102",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler"
+    }
+  },
+  "52": {
+    "inputs": {
+      "PowerLoraLoaderHeaderWidget": {
+        "type": "PowerLoraLoaderHeaderWidget"
+      },
+      "lora_1": {
+        "on": false,
+        "lora": "z-lora\\vu-6\\zVu_v6_e8.safetensors",
+        "strength": 0.2
+      },
+      "lora_2": {
+        "on": false,
+        "lora": "z-lora\\vu-face\\vu_face_base_v1.safetensors",
+        "strength": 0.3
+      },
+      "lora_3": {
+        "on": false,
+        "lora": "z-lora\\vu-bd-v1\\zVu_bd_e8.safetensors",
+        "strength": 0.3
+      },
+      "lora_4": {
+        "on": false,
+        "lora": "z-lora\\vu-face\\vu_face_base_v6.safetensors",
+        "strength": 0.7
+      },
+      "➕ Add Lora": "",
+      "model": [
+        "28",
+        0
+      ],
+      "clip": [
+        "18",
+        0
+      ]
+    },
+    "class_type": "Power Lora Loader (rgthree)",
+    "_meta": {
+      "title": "Power Lora Loader (rgthree)"
+    }
+  },
+  "53": {
+    "inputs": {
+      "text": "vu_f4c3_nmk_v6, a woman, curly hair, realistic, looking at viewer, open mouth",
+      "clip": [
+        "52",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Positive Prompt)"
+    }
+  },
+  "54": {
+    "inputs": {
+      "samples": [
+        "48",
+        0
+      ],
+      "vae": [
+        "17",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "74": {
+    "inputs": {
+      "value": "t2i/z/vu/face"
+    },
+    "class_type": "PrimitiveString",
+    "_meta": {
+      "title": "Description"
+    }
+  },
+  "100": {
+    "inputs": {
+      "image": "pasted/image (408).png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Image"
+    }
+  },
+  "101": {
+    "inputs": {
+      "upscale_method": "area",
+      "largest_size": 1024,
+      "image": [
+        "100",
+        0
+      ]
+    },
+    "class_type": "ImageScaleToMaxDimension",
+    "_meta": {
+      "title": "ImageScaleToMaxDimension"
+    }
+  },
+  "102": {
+    "inputs": {
+      "pixels": [
+        "101",
+        0
+      ],
+      "vae": [
+        "17",
+        0
+      ]
+    },
+    "class_type": "VAEEncode",
+    "_meta": {
+      "title": "VAE Encode"
+    }
+  }
+}

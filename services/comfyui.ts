@@ -202,11 +202,20 @@ export const loadWorkflow = async (workflowName: string): Promise<any> => {
 
 export const getAvailableWorkflows = async (): Promise<string[]> => {
     try {
-        const response = await fetch('/workflows/manifest.json');
-        if (!response.ok) return [];
+        // Fetch from dynamic API first
+        const response = await fetch('/api/workflows');
+        if (response.ok) {
+            const data = await response.json();
+            return data.workflows || [];
+        }
 
-        const manifest = await response.json();
-        return manifest.workflows || [];
+        // Fallback to manifest if API fails (unlikely in dev)
+        const manifestRes = await fetch('/workflows/manifest.json');
+        if (manifestRes.ok) {
+            const manifest = await manifestRes.json();
+            return manifest.workflows || [];
+        }
+        return [];
     } catch {
         return [];
     }

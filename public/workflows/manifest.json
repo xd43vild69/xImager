@@ -1,15 +1,18 @@
 {
   "workflows": [
+    "male_epn_i2i_v1.json",
     "klein_mix_cb.json",
     "klein_rm.json",
     "klein_t2i.json",
+    "male_fc_v1.json",
     "vu_bd_v1.json",
     "vu_bd_v2.json",
     "vu_bd_v3.json",
     "vu_bds_v1.json",
     "vu_face_v2.json",
-    "vu_face_v6.json"
+    "vu_face_v6.json",
+    "zimageI2I.json"
   ],
-  "generatedAt": "2026-02-02T19:48:30.337Z",
-  "count": 9
+  "generatedAt": "2026-02-02T20:23:21.986Z",
+  "count": 12
 }

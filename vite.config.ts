@@ -55,7 +55,34 @@ export default defineConfig(({ mode }) => {
             next();
           });
 
-          // Workflow Rename Endpoint
+
+
+          // Workflow List Endpoint
+          server.middlewares.use('/api/workflows', async (req, res, next) => {
+            if (req.originalUrl === '/api/workflows' && req.method === 'GET') {
+              const fs = await import('fs');
+              const path = await import('path');
+              const workflowsDir = path.resolve(__dirname, 'public/workflows');
+
+              try {
+                if (fs.existsSync(workflowsDir)) {
+                  const files = fs.readdirSync(workflowsDir);
+                  const workflows = files.filter(file => file.endsWith('.json'));
+                  res.setHeader('Content-Type', 'application/json');
+                  res.end(JSON.stringify({ workflows }));
+                } else {
+                  res.end(JSON.stringify({ workflows: [] }));
+                }
+              } catch (e) {
+                res.statusCode = 500;
+                res.end(JSON.stringify({ error: 'Failed to list workflows' }));
+              }
+              return;
+            }
+            next();
+          });
+
+          // Workflow Rename Endpoint (Restored)
           server.middlewares.use('/api/workflows/rename', async (req, res, next) => {
             const fs = await import('fs');
             const path = await import('path');
