@@ -4,7 +4,8 @@ export enum View {
   I2I_SETTINGS = 'i2i_settings',
   SETTINGS = 'settings',
   LOGS = 'logs',
-  KEYWORDS = 'keywords'
+  KEYWORDS = 'keywords',
+  KEYWORDS_AC = 'keywords_ac'
 }
 
 export interface LogEntry {

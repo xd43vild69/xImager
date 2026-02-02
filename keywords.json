@@ -1,27 +1,77 @@
 {
   "vu_f4c3_v2": {
     "text": "vu_f4c3_v2",
-    "count": 1,
-    "lastUsed": 1770046837268
+    "count": 18,
+    "lastUsed": 1770049355640
   },
   "vu_f4c3_v1": {
     "text": "vu_f4c3_v1",
-    "count": 1,
-    "lastUsed": 1770046837268
+    "count": 21,
+    "lastUsed": 1770050230413
   },
   "a woman": {
     "text": "a woman",
-    "count": 1,
-    "lastUsed": 1770046837268
+    "count": 27,
+    "lastUsed": 1770050335378
   },
   "open mouth": {
     "text": "open mouth",
-    "count": 1,
-    "lastUsed": 1770046837268
+    "count": 13,
+    "lastUsed": 1770050146695
   },
   "looking at side": {
     "text": "looking at side",
+    "count": 3,
+    "lastUsed": 1770048118184
+  },
+  "looking backward": {
+    "text": "looking backward",
+    "count": 2,
+    "lastUsed": 1770047895609
+  },
+  "closed eyes": {
+    "text": "closed eyes",
+    "count": 3,
+    "lastUsed": 1770048237528
+  },
+  "auburn hair": {
+    "text": "auburn hair",
+    "count": 3,
+    "lastUsed": 1770048237528
+  },
+  "smile": {
+    "text": "smile",
     "count": 1,
-    "lastUsed": 1770046837268
+    "lastUsed": 1770048237528
+  },
+  "parted lips": {
+    "text": "parted lips",
+    "count": 10,
+    "lastUsed": 1770050335378
+  },
+  "looking at viewer": {
+    "text": "looking at viewer",
+    "count": 16,
+    "lastUsed": 1770050335378
+  },
+  "red lips": {
+    "text": "red lips",
+    "count": 2,
+    "lastUsed": 1770049355640
+  },
+  "vu_f4c3_nmk_v6": {
+    "text": "vu_f4c3_nmk_v6",
+    "count": 9,
+    "lastUsed": 1770050335378
+  },
+  "curly hair": {
+    "text": "curly hair",
+    "count": 9,
+    "lastUsed": 1770050335378
+  },
+  "realistic": {
+    "text": "realistic",
+    "count": 3,
+    "lastUsed": 1770050146695
   }
 }

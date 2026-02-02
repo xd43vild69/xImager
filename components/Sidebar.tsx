@@ -12,8 +12,9 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange }) => {
 
   const navItems = [
     { id: View.EXECUTION, label: 'Execution', icon: 'dashboard' },
-    { id: View.I2I_SETTINGS, label: 'I2I - Settings', icon: 'tune' },
+    { id: View.I2I_SETTINGS, label: 'Workflow Settings', icon: 'tune' },
     { id: View.KEYWORDS, label: 'Keywords', icon: 'translate' },
+    { id: View.KEYWORDS_AC, label: 'Autocompleter', icon: 'dictionary' },
     { id: View.SETTINGS, label: 'API Settings', icon: 'api' },
   ];
 
@@ -42,8 +43,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange }) => {
           </div>
           {!isCollapsed && (
             <div className="flex flex-col overflow-hidden whitespace-nowrap">
-              <h1 className="text-base font-bold leading-none tracking-tight">AI Orchestrator</h1>
-              <p className="text-slate-500 text-xs font-medium">Desktop Engine v2.4</p>
+              <h1 className="text-base font-bold leading-none tracking-tight">xOrchestrator</h1>
+              <p className="text-slate-500 text-xs font-medium">Engine v0.1</p>
             </div>
           )}
         </div>
@@ -85,8 +86,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange }) => {
             </div>
             <div className="space-y-1.5">
               <div className="flex justify-between text-[11px] font-medium">
-                <span>RTX 4090</span>
-                <span className="text-slate-400">24GB VRAM</span>
+                <span>RTX 4070Ti</span>
+                <span className="text-slate-400">12GB VRAM</span>
               </div>
               <div className="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
                 <div className="bg-primary h-full w-[12%] transition-all duration-1000"></div>

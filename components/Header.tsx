@@ -33,7 +33,7 @@ const Header: React.FC<HeaderProps> = ({ selectedWorkflow, onWorkflowChange, cur
       <div className="flex items-center gap-4 flex-1">
         <div className="flex items-center gap-2 text-slate-400">
           <span className="material-symbols-outlined text-sm">folder_open</span>
-          <span className="text-[10px] font-bold uppercase tracking-widest whitespace-nowrap hidden sm:inline">Project: Default</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest whitespace-nowrap hidden sm:inline">Workflow:</span>
         </div>
 
         <div className="h-4 w-px bg-border-dark hidden sm:block"></div>

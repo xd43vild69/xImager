@@ -464,7 +464,7 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt 
                 : 'bg-primary text-white hover:bg-primary/90 active:scale-95 shadow-lg shadow-primary/25'
                 }`}
             >
-              {execution.isProcessing ? 'Processing' : 'Queue Prompt'}
+              {execution.isProcessing ? 'Processing' : 'Run'}
             </button>
 
             <button

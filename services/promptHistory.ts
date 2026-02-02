@@ -91,5 +91,90 @@ export const recordPromptKeywords = async (prompt: string) => {
     }
 };
 
+// Helper to save history to server
+const saveHistory = async (history: Record<string, KeywordStat>) => {
+    try {
+        const res = await fetch('/api/keywords', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(history, null, 2)
+        });
+        if (res.ok) {
+            keywordCache = history;
+        }
+    } catch (e) {
+        console.error('Failed to save keyword history', e);
+    }
+};
+
+// Update a keyword (rename or change count)
+export const updateKeyword = async (oldText: string, newText: string, newCount: number) => {
+    await loadKeywordHistory();
+    const history = { ...keywordCache };
+    const now = Date.now();
+
+    // If renaming
+    if (oldText !== newText) {
+        if (history[newText]) {
+            // Merge
+            // The requirement says: "Fusionar ambas keywords. Sumar count. Conservar el lastUsed más reciente."
+            // Let's assume newCount is the intended count for the 'old' entity.
+            // If merging, we usually sum the existing count of target + intended count of source.
+            // But if user manually set count to X, maybe they want X.
+            // "Sumar count" implies adding the *source's* count to the *target's* count.
+            // But we might have edited the source count too.
+            // Let's simplicity: if merging, existing target count + newCount.
+
+            history[newText].count += newCount;
+            history[newText].lastUsed = Math.max(history[newText].lastUsed, history[oldText]?.lastUsed || 0);
+        } else {
+            // Rename
+            history[newText] = {
+                text: newText,
+                count: newCount,
+                lastUsed: history[oldText]?.lastUsed || now
+            };
+        }
+        delete history[oldText];
+    } else {
+        // Just updating count usually
+        if (history[oldText]) {
+            history[oldText].count = newCount;
+        }
+    }
+
+    await saveHistory(history);
+};
+
+export const deleteKeyword = async (text: string) => {
+    await loadKeywordHistory();
+    const history = { ...keywordCache };
+    if (history[text]) {
+        delete history[text];
+        await saveHistory(history);
+    }
+};
+
+export const addKeyword = async (text: string, count: number) => {
+    await loadKeywordHistory();
+    const history = { ...keywordCache };
+    const now = Date.now();
+
+    if (history[text]) {
+        // Already exists? requirement says "Fusionar" if rename, but for add? 
+        // "crear inmediatamente". if exists, maybe just update?
+        // Let's assume we overwrite or add to it.
+        history[text].count += count;
+        history[text].lastUsed = now; // Update last used
+    } else {
+        history[text] = {
+            text,
+            count,
+            lastUsed: now
+        };
+    }
+    await saveHistory(history);
+};
+
 // Initialize load
 loadKeywordHistory();
