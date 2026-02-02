@@ -249,7 +249,7 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow }) => {
   };
 
   const [isPromptCollapsed, setIsPromptCollapsed] = useState(false);
-  const [isLogsCollapsed, setIsLogsCollapsed] = useState(false);
+  const [isLogsCollapsed, setIsLogsCollapsed] = useState(true);
 
   return (
     <div className="flex flex-col h-full bg-slate-50 dark:bg-background-dark/50 overflow-hidden">

@@ -1,9 +1,6 @@
-
 /// <reference types="vite/client" />
 export enum View {
   EXECUTION = 'execution',
-  HISTORY = 'history',
-  MODELS = 'models',
   SETTINGS = 'settings',
   LOGS = 'logs',
   KEYWORDS = 'keywords'

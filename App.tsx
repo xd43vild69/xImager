@@ -5,8 +5,6 @@ import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import ExecutionView from './components/ExecutionView';
 import SettingsView from './components/SettingsView';
-import HistoryView from './components/HistoryView';
-import ModelsView from './components/ModelsView';
 import KeywordsView from './components/KeywordsView';
 import * as ComfyUI from './services/comfyui';
 
@@ -45,10 +43,6 @@ const App: React.FC = () => {
     switch (currentView) {
       case View.EXECUTION:
         return <ExecutionView selectedWorkflow={selectedWorkflow} />;
-      case View.HISTORY:
-        return <HistoryView />;
-      case View.MODELS:
-        return <ModelsView />;
       case View.KEYWORDS:
         return <KeywordsView />;
       case View.SETTINGS:
