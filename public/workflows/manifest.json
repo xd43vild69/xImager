@@ -1,10 +1,10 @@
 {
   "workflows": [
-    "i2i_vu_fc_makeup.json",
     "klein_mix_cb.json",
     "klein_rm_character.json",
-    "klein_t2i_base.json"
+    "klein_t2i_base.json",
+    "vu_i2i_v2.json"
   ],
-  "generatedAt": "2026-02-02T13:53:19.748Z",
+  "generatedAt": "2026-02-02T14:09:57.213Z",
   "count": 4
 }

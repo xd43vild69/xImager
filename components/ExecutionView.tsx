@@ -378,7 +378,7 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt 
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
                 <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                  Live Result View
+                  Output
                 </h3>
                 <button
                   onClick={async () => {
