@@ -11,110 +11,102 @@ import I2ISettingsView from './components/I2ISettingsView';
 import * as ComfyUI from './services/comfyui';
 import { useSettings } from './contexts/SettingsContext';
 
+import Modal from './components/Modal';
+
 const App: React.FC = () => {
   const { settings } = useSettings();
   const [currentView, setCurrentView] = useState<View>(View.EXECUTION);
   const [availableWorkflows, setAvailableWorkflows] = useState<string[]>([]);
-  // Initialize from localStorage or default
+
+  // State Initialization
   const [selectedWorkflow, setSelectedWorkflow] = useState(() => {
     return localStorage.getItem('selectedWorkflow') || 'SDXL_Image_Enhancer_v4.json';
   });
 
-  // Initialize prompt from localStorage
   const [prompt, setPrompt] = useState(() => {
     return localStorage.getItem('positivePrompt') || '';
   });
 
-  // Save prompt to localStorage whenever it changes
+  // Effects
   useEffect(() => {
     localStorage.setItem('positivePrompt', prompt);
   }, [prompt]);
 
-  // Apply default positive prompt when workflow changes
   useEffect(() => {
-    // When workflow changes, clear prompt and set to default if configured, or empty.
     const defaultPrompt = settings.workflowPrompts?.[selectedWorkflow];
     setPrompt(defaultPrompt || '');
   }, [selectedWorkflow, settings.workflowPrompts]);
 
-  // Save selection to localStorage whenever it changes
   useEffect(() => {
     if (selectedWorkflow) {
       localStorage.setItem('selectedWorkflow', selectedWorkflow);
     }
   }, [selectedWorkflow]);
 
-  // Load available workflows on mount
   useEffect(() => {
     const loadWorkflows = async () => {
       const workflows = await ComfyUI.getAvailableWorkflows();
       setAvailableWorkflows(workflows);
 
-      // Validate current selection against available workflows
       if (workflows.length > 0 && !workflows.includes(selectedWorkflow)) {
-        // If stored/current workflow is invalid, fallback to the first available
         setSelectedWorkflow(workflows[0]);
       }
     };
-
     loadWorkflows();
-  }, [selectedWorkflow]); // Add selectedWorkflow dependency to ensure check runs correctly if state updates
+  }, [selectedWorkflow]);
 
-  const renderView = () => {
+  // Modal Render Logic
+  const renderModalContent = () => {
     switch (currentView) {
-      case View.EXECUTION:
-        return <ExecutionView selectedWorkflow={selectedWorkflow} prompt={prompt} />;
       case View.KEYWORDS:
         return <KeywordsView />;
       case View.KEYWORDS_AC:
         return <KeywordsManager />;
       case View.I2I_SETTINGS:
         return <I2ISettingsView onWorkflowsChange={() => {
-          // Trigger reload of workflows in App
           const loadWorkflows = async () => {
             const workflows = await ComfyUI.getAvailableWorkflows();
             setAvailableWorkflows(workflows);
-
-            // Also update selectedWorkflow if the current one was renamed/deleted is handled by useEffect checks
-            // But we might want to ensure we don't have a stale selectedWorkflow?
-            // The rename logic in I2ISettingsView doesn't impact 'selectedWorkflow' state here yet,
-            // unless we match names. 
-            // If the current selectedWorkflow was renamed, we should probably update it too?
-            // That's tricky because we don't know *what* was renamed here easily without more args.
-            // For now, refreshing the list updates the dropdown options. 
           };
           loadWorkflows();
         }} />;
       case View.SETTINGS:
         return <SettingsView />;
       default:
-        return (
-          <div className="flex flex-col items-center justify-center h-full text-slate-500">
-            <span className="material-symbols-outlined text-6xl mb-4">construction</span>
-            <h2 className="text-xl font-bold">View Under Construction</h2>
-            <p>The {currentView} module is currently being optimized.</p>
-          </div>
-        );
+        return null;
     }
+  };
+
+  const handleCloseModal = () => {
+    setCurrentView(View.EXECUTION);
   };
 
   return (
     <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100">
+      {/* Sidebar: passes current view and updater. Note: If modal is open, sidebar highlights it. */}
       <Sidebar currentView={currentView} onViewChange={setCurrentView} />
 
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
         <Header
           selectedWorkflow={selectedWorkflow}
           onWorkflowChange={setSelectedWorkflow}
-          currentView={currentView}
+          currentView={currentView} // Header doesn't need to know about modals really, but we keep it
           availableWorkflows={availableWorkflows}
           prompt={prompt}
           setPrompt={setPrompt}
         />
 
-        <div className="flex-1 overflow-hidden relative">
-          {renderView()}
+        {/* MAIN VIEW: ALWAYS EXECUTION */}
+        <div className="flex-1 overflow-hidden relative z-0">
+          <ExecutionView selectedWorkflow={selectedWorkflow} prompt={prompt} />
         </div>
+
+        {/* MODAL OVERLAY */}
+        {currentView !== View.EXECUTION && (
+          <Modal onClose={handleCloseModal}>
+            {renderModalContent()}
+          </Modal>
+        )}
       </main>
     </div>
   );
