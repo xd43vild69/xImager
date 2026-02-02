@@ -27,4 +27,6 @@ dist-ssr
 # Environment Variables
 .env
 .env.*
-!.env.example
+
+# App Data
+keywords.json

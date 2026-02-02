@@ -69,7 +69,22 @@ const App: React.FC = () => {
       case View.KEYWORDS_AC:
         return <KeywordsManager />;
       case View.I2I_SETTINGS:
-        return <I2ISettingsView />;
+        return <I2ISettingsView onWorkflowsChange={() => {
+          // Trigger reload of workflows in App
+          const loadWorkflows = async () => {
+            const workflows = await ComfyUI.getAvailableWorkflows();
+            setAvailableWorkflows(workflows);
+
+            // Also update selectedWorkflow if the current one was renamed/deleted is handled by useEffect checks
+            // But we might want to ensure we don't have a stale selectedWorkflow?
+            // The rename logic in I2ISettingsView doesn't impact 'selectedWorkflow' state here yet,
+            // unless we match names. 
+            // If the current selectedWorkflow was renamed, we should probably update it too?
+            // That's tricky because we don't know *what* was renamed here easily without more args.
+            // For now, refreshing the list updates the dropdown options. 
+          };
+          loadWorkflows();
+        }} />;
       case View.SETTINGS:
         return <SettingsView />;
       default:

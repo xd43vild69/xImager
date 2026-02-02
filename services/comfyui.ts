@@ -257,3 +257,22 @@ const generateClientId = (): string => {
         .toString(36)
         .slice(2, 10)}`;
 };
+
+// Rename a workflow file
+export const renameWorkflow = async (oldName: string, newName: string): Promise<{ success: boolean; newName?: string; error?: string }> => {
+    try {
+        const res = await fetch('/api/workflows/rename', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ oldName, newName })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            throw new Error(data.error || 'Rename failed');
+        }
+        return data;
+    } catch (error) {
+        console.error('Failed to rename workflow:', error);
+        return { success: false, error: String(error) };
+    }
+};
