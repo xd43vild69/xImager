@@ -27,7 +27,7 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt 
     eta: '0s',
     iterRate: '0 it/s',
     totalTime: '0s',
-    resultUrl: '/removeCharacter.jpg',
+    resultUrl: '/removeCharacter.png',
   });
 
   const [requiredSlots, setRequiredSlots] = useState(1);

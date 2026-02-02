@@ -12,6 +12,10 @@ const PromptInput = React.forwardRef<HTMLTextAreaElement, PromptInputProps>(({ v
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [cursorPos, setCursorPos] = useState(0);
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    // Track Alt key state to suppress autocomplete during navigation
+    const isAltPressed = useRef(false);
 
     // We use the forwarded ref if provided, but we also rely on internal state for selection range.
     // Actually onSelect gives us the cursor pos. We don't strictly need the ref internally 
@@ -34,6 +38,11 @@ const PromptInput = React.forwardRef<HTMLTextAreaElement, PromptInputProps>(({ v
     };
 
     useEffect(() => {
+        if (isAltPressed.current) {
+            setShowSuggestions(false);
+            return;
+        }
+
         const { text } = getCurrentToken(value, cursorPos);
         const cleanText = text.trimStart();
 
@@ -63,11 +72,30 @@ const PromptInput = React.forwardRef<HTMLTextAreaElement, PromptInputProps>(({ v
         onChange(newValue + suffix);
 
         setShowSuggestions(false);
-
-        // We rely on the user to keep typing or the parent to maintain focus.
     };
 
+    // Global toggle shortcut
+    useEffect(() => {
+        const handleGlobalKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.code === 'Digit2') {
+                e.preventDefault();
+                setIsExpanded(prev => !prev);
+            }
+        };
+        window.addEventListener('keydown', handleGlobalKeyDown);
+        return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+    }, []);
+
     const handleKeyDown = (e: React.KeyboardEvent) => {
+        // Always track Alt state first
+        isAltPressed.current = e.altKey;
+
+        // Force close if Alt is pressed
+        if (e.key === 'Alt' || e.altKey) {
+            setShowSuggestions(false);
+            return;
+        }
+
         if (showSuggestions) {
             if (e.key === 'ArrowDown') {
                 e.preventDefault();
@@ -88,6 +116,10 @@ const PromptInput = React.forwardRef<HTMLTextAreaElement, PromptInputProps>(({ v
         }
     };
 
+    const handleKeyUp = (e: React.KeyboardEvent) => {
+        isAltPressed.current = e.altKey;
+    };
+
     return (
         <div className="relative w-full h-full group">
             <textarea
@@ -99,13 +131,26 @@ const PromptInput = React.forwardRef<HTMLTextAreaElement, PromptInputProps>(({ v
                 }}
                 onSelect={(e) => setCursorPos(e.currentTarget.selectionStart)}
                 onKeyDown={handleKeyDown}
+                onKeyUp={handleKeyUp}
                 placeholder="Enter positive prompt (comma separated)..."
                 className="w-full h-full bg-neutral-100 dark:bg-panel-dark border border-neutral-200 dark:border-border-dark rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-primary focus:outline-none transition-all hover:border-neutral-300 dark:hover:border-neutral-600 placeholder-neutral-400 resize-y align-top min-h-[40px] max-h-[500px] leading-relaxed whitespace-pre-wrap"
-                style={{ minHeight: '40px' }}
+                style={{ minHeight: isExpanded ? '50vh' : '40px', transition: 'min-height 0.3s ease-in-out' }}
             />
-            <span className="material-symbols-outlined absolute right-3 top-2 text-neutral-400 pointer-events-none text-sm group-focus-within:text-primary">
+            {/* Visual Icon (Edit) - moved slightly left or kept as indicator */}
+            <span className="material-symbols-outlined absolute right-8 top-2 text-neutral-400 pointer-events-none text-sm group-focus-within:text-primary opacity-50">
                 edit
             </span>
+
+            {/* Expand Toggle Button */}
+            <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="absolute right-2 top-1.5 p-1 rounded-md text-neutral-400 hover:text-primary hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors z-10"
+                title={isExpanded ? "Collapse" : "Expand to 50%"}
+            >
+                <span className="material-symbols-outlined text-sm">
+                    {isExpanded ? 'close_fullscreen' : 'open_in_full'}
+                </span>
+            </button>
 
             {showSuggestions && (
                 <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-panel-dark border border-neutral-200 dark:border-border-dark rounded-lg shadow-xl z-50 overflow-hidden max-h-60 overflow-y-auto">

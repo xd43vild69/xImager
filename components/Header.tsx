@@ -54,7 +54,7 @@ const Header: React.FC<HeaderProps> = ({ selectedWorkflow, onWorkflowChange, cur
         </span>
       </div>
 
-      <div className={`px-6 transition-all duration-300 ${canOverflow ? 'overflow-visible' : 'overflow-hidden'} ${isCollapsed ? 'max-h-0 opacity-0' : 'max-h-[500px] opacity-100 py-3'}`}>
+      <div className={`px-6 transition-all duration-300 ${canOverflow ? 'overflow-visible' : 'overflow-hidden'} ${isCollapsed ? 'max-h-0 opacity-0' : 'max-h-[80vh] opacity-100 py-3'}`}>
         <div className="flex items-start gap-4 flex-1">
           <div className="flex items-center gap-2 text-neutral-400 mt-2">
             <span className="material-symbols-outlined text-sm">folder_open</span>
