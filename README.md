@@ -61,3 +61,22 @@ Export your workflow from ComfyUI in **API Format** (Save (API Format) button) a
 1.  Open the Sidebar and go to **Keywords**.
 2.  Add a shortcut (e.g., `face_fix`) and its replacement text.
 3.  In the prompt box, type `@face_fix` to use it.
+
+
+---
+
+### TODO
+
+1. Create a new modal to extend output image
+
+[x] size image
+- seed fix or increase
+- denoise sampler for i2i
+
+
+
+- sonido al finalizar un proceso
+
+- batch size and read input from folder 
+
+

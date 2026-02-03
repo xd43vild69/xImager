@@ -12,11 +12,16 @@ import * as ComfyUI from './services/comfyui';
 import { useSettings } from './contexts/SettingsContext';
 
 import Modal from './components/Modal';
+import ImageSettingsModal from './components/ImageSettingsModal';
+import { ImageSettings } from './utilities/patching';
 
 const App: React.FC = () => {
   const { settings } = useSettings();
   const [currentView, setCurrentView] = useState<View>(View.EXECUTION);
   const [availableWorkflows, setAvailableWorkflows] = useState<string[]>([]);
+
+  // Execution Control
+  const [executionOverrides, setExecutionOverrides] = useState<ImageSettings | undefined>(undefined);
 
   // State Initialization
   const [selectedWorkflow, setSelectedWorkflow] = useState(() => {
@@ -72,6 +77,15 @@ const App: React.FC = () => {
         }} />;
       case View.SETTINGS:
         return <SettingsView />;
+      case View.IMAGE_SETTINGS:
+        return (
+          <ImageSettingsModal
+            selectedWorkflow={selectedWorkflow}
+            onClose={handleCloseModal}
+            currentSettings={executionOverrides}
+            onSettingsChange={setExecutionOverrides}
+          />
+        );
       default:
         return null;
     }
@@ -98,7 +112,11 @@ const App: React.FC = () => {
 
         {/* MAIN VIEW: ALWAYS EXECUTION */}
         <div className="flex-1 overflow-hidden relative z-0">
-          <ExecutionView selectedWorkflow={selectedWorkflow} prompt={prompt} />
+          <ExecutionView
+            selectedWorkflow={selectedWorkflow}
+            prompt={prompt}
+            overrides={executionOverrides}
+          />
         </div>
 
         {/* MODAL OVERLAY */}

@@ -84,7 +84,7 @@
   },
   "85": {
     "inputs": {
-      "value": 832
+      "value": 512
     },
     "class_type": "PrimitiveInt",
     "_meta": {
@@ -93,7 +93,7 @@
   },
   "86": {
     "inputs": {
-      "value": 1480
+      "value": 768
     },
     "class_type": "PrimitiveInt",
     "_meta": {
@@ -121,10 +121,7 @@
   },
   "89": {
     "inputs": {
-      "text": [
-        "99",
-        0
-      ],
+      "text": "medellin, colombia, latin america, south america, city, street",
       "clip": [
         "94",
         0
@@ -175,7 +172,7 @@
   },
   "93": {
     "inputs": {
-      "noise_seed": 314159265358979
+      "noise_seed": 445368787679717
     },
     "class_type": "RandomNoise",
     "_meta": {

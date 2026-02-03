@@ -4,13 +4,16 @@ import LogFeed from './LogFeed';
 import * as ComfyUI from '../services/comfyui';
 import { useSettings } from '../contexts/SettingsContext';
 import { recordPromptKeywords } from '../services/promptHistory';
+import { applyOverrides, ImageSettings } from '../utilities/patching';
 
 interface ExecutionViewProps {
   selectedWorkflow: string;
   prompt: string;
+  overrides?: ImageSettings;
+  runTrigger?: number;
 }
 
-const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt }) => {
+const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt, overrides, runTrigger }) => {
   const { settings } = useSettings();
   const [logs, setLogs] = useState<LogEntry[]>([]);
 
@@ -128,7 +131,14 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt 
 
     try {
       // Load workflow JSON
-      const workflow = await ComfyUI.loadWorkflow(selectedWorkflow);
+      let workflow = await ComfyUI.loadWorkflow(selectedWorkflow);
+
+      // Apply overrides if present
+      if (overrides) {
+        workflow = applyOverrides(workflow, overrides);
+        addLog('INFO', `Applied temporary settings: ${overrides.width}x${overrides.height}`);
+      }
+
       addLog('INFO', 'Workflow loaded successfully.');
 
       const uploadedFilenames: string[] = [];
@@ -241,7 +251,14 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt 
       );
       setExecution(prev => ({ ...prev, isProcessing: false }));
     }
-  }, [execution.isProcessing, selectedWorkflow, referenceImages, prompt, requiredSlots, settings.keywords]);
+  }, [execution.isProcessing, selectedWorkflow, referenceImages, prompt, requiredSlots, settings.keywords, overrides]);
+
+  // Handle external run trigger
+  useEffect(() => {
+    if (runTrigger && runTrigger > 0) {
+      runProcess();
+    }
+  }, [runTrigger, runProcess]);
 
   // Keyboard shortcut
   useEffect(() => {
