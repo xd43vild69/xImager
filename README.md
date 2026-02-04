@@ -1,5 +1,5 @@
 <div align="center">
-<img width="1200" height="475" alt="GHBanner" src="public/removeCharacter" />
+<img width="1200" height="475" alt="GHBanner" src="public/removeCharacter.png" />
 </div>
 
 # xImager - ComfyUI Workflow Orchestrator
