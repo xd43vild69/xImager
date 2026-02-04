@@ -104,7 +104,8 @@ export const queuePrompt = async (
         if (
             node.class_type === 'CLIPTextEncode' ||
             node.class_type === 'PromptNode' ||
-            node.class_type === 'Text'
+            node.class_type === 'Text' ||
+            node.class_type === 'Text Multiline'
         ) {
             if (node.inputs?.text !== undefined) {
                 node.inputs.text = prompt;
@@ -169,11 +170,43 @@ export const pollForCompletion = async (
 /* ===============================
    IMAGE EXTRACTION
 ================================ */
-export const extractImageFromHistory = async (
+/* ===============================
+   RESULT EXTRACTION
+================================ */
+export interface ExecutionResult {
+    type: 'image' | 'text';
+    value: string;
+}
+
+export const extractResultFromHistory = async (
     history: any
-): Promise<string | null> => {
+): Promise<ExecutionResult | null> => {
     if (!history?.outputs) return null;
 
+    // 1. Check for Text Output (ShowText)
+    for (const nodeId in history.outputs) {
+        const output = history.outputs[nodeId];
+
+        // Check for 'preview' in output (just in case)
+        if (output.preview) {
+            const value = Array.isArray(output.preview) ? output.preview.join('\n') : String(output.preview);
+            if (value.trim().length > 0) {
+                return {
+                    type: 'text',
+                    value: value
+                };
+            }
+        }
+
+        if (output.text && Array.isArray(output.text) && output.text.length > 0) {
+            return {
+                type: 'text',
+                value: output.text.join('\n') // Join if multiple lines/outputs
+            };
+        }
+    }
+
+    // 2. Check for Image Output
     for (const nodeId in history.outputs) {
         const output = history.outputs[nodeId];
 
@@ -181,7 +214,7 @@ export const extractImageFromHistory = async (
             const img = output.images[0];
 
             // NOTE: this URL still points to proxy, not ComfyUI directly
-            return `${COMFY_PROXY_URL.replace(
+            const url = `${COMFY_PROXY_URL.replace(
                 '/api/comfy',
                 ''
             )}/view?filename=${encodeURIComponent(
@@ -189,6 +222,11 @@ export const extractImageFromHistory = async (
             )}&subfolder=${encodeURIComponent(
                 img.subfolder || ''
             )}&type=${img.type || 'output'}`;
+
+            return {
+                type: 'image',
+                value: url
+            };
         }
     }
 

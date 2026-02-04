@@ -5,6 +5,7 @@ import * as ComfyUI from '../services/comfyui';
 import { useSettings } from '../contexts/SettingsContext';
 import { recordPromptKeywords } from '../services/promptHistory';
 import { applyOverrides, ImageSettings } from '../utilities/patching';
+import { playNotificationSound } from '../utilities/sound';
 
 interface ExecutionViewProps {
   selectedWorkflow: string;
@@ -31,6 +32,8 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt,
     iterRate: '0 it/s',
     totalTime: '0s',
     resultUrl: '/removeCharacter.png',
+    resultType: 'image',
+    resultText: null
   });
 
   const [requiredSlots, setRequiredSlots] = useState(1);
@@ -224,11 +227,11 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt,
       const history = await ComfyUI.pollForCompletion(promptId, 120, 1000);
       clearInterval(progressInterval);
 
-      // Extract image
-      const imageUrl = await ComfyUI.extractImageFromHistory(history);
+      // Extract result
+      const result = await ComfyUI.extractResultFromHistory(history);
 
-      if (!imageUrl) {
-        throw new Error('No image generated in workflow output');
+      if (!result) {
+        throw new Error('No output generated in workflow');
       }
 
       const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
@@ -238,12 +241,20 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt,
         isProcessing: false,
         progress: 100,
         step: totalSteps,
-        resultUrl: imageUrl,
+        resultUrl: result.type === 'image' ? result.value : null,
+        resultText: result.type === 'text' ? result.value : null,
+        resultType: result.type,
         totalTime: `${totalTime}s`,
       }));
 
       addLog('LOAD', 'Output assets synchronized to storage.');
       addLog('INFO', `Execution finished successfully in ${totalTime}s.`);
+
+      // Play notification sound
+      if (!settings.isMuted) {
+        playNotificationSound().catch(err => console.error('Audio playback failed:', err));
+      }
+
     } catch (error) {
       addLog(
         'ERROR',
@@ -251,7 +262,7 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt,
       );
       setExecution(prev => ({ ...prev, isProcessing: false }));
     }
-  }, [execution.isProcessing, selectedWorkflow, referenceImages, prompt, requiredSlots, settings.keywords, overrides]);
+  }, [execution.isProcessing, selectedWorkflow, referenceImages, prompt, requiredSlots, settings.keywords, overrides, settings.isMuted]);
 
   // Handle external run trigger
   useEffect(() => {
@@ -384,22 +395,26 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt,
                 </h3>
                 <button
                   onClick={async () => {
-                    if (!execution.resultUrl) return;
                     try {
-                      const response = await fetch(execution.resultUrl);
-                      const blob = await response.blob();
-                      await navigator.clipboard.write([
-                        new ClipboardItem({
-                          [blob.type]: blob,
-                        }),
-                      ]);
-                      addLog('INFO', 'Result image copied to clipboard.');
+                      if (execution.resultType === 'text' && execution.resultText) {
+                        await navigator.clipboard.writeText(execution.resultText);
+                        addLog('INFO', 'Result text copied to clipboard.');
+                      } else if (execution.resultUrl) {
+                        const response = await fetch(execution.resultUrl);
+                        const blob = await response.blob();
+                        await navigator.clipboard.write([
+                          new ClipboardItem({
+                            [blob.type]: blob,
+                          }),
+                        ]);
+                        addLog('INFO', 'Result image copied to clipboard.');
+                      }
                     } catch (error) {
                       console.error('Copy failed:', error);
-                      addLog('ERROR', 'Failed to copy image to clipboard.');
+                      addLog('ERROR', 'Failed to copy to clipboard.');
                     }
                   }}
-                  disabled={!execution.resultUrl || execution.isProcessing}
+                  disabled={(!execution.resultUrl && !execution.resultText) || execution.isProcessing}
                   className="p-1.5 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   title="Copy to Clipboard"
                 >
@@ -408,29 +423,40 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt,
               </div>
 
               <div className="flex-1 bg-neutral-100 dark:bg-panel-dark border rounded-xl relative overflow-hidden shadow-2xl flex flex-col">
-                <div className="flex-1 relative p-2 flex items-center justify-center group">
-                  <img
-                    src={execution.resultUrl || '/removeCharacter.jpg'}
-                    alt="Generation Result"
-                    onLoad={(e) => {
-                      const img = e.currentTarget;
-                      setResultDimensions({ width: img.naturalWidth, height: img.naturalHeight });
-                    }}
-                    className={`max-w-full max-h-full object-contain rounded-lg transition-all duration-500 ${execution.isProcessing ? 'blur-md opacity-50 grayscale' : ''
-                      }`}
-                  />
+                <div className="flex-1 relative p-2 flex items-center justify-center group overflow-hidden">
+                  {execution.resultType === 'text' ? (
+                    <textarea
+                      readOnly
+                      value={execution.resultText || ''}
+                      className="w-full h-full resize-none bg-transparent border-none focus:ring-0 p-4 font-mono text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 overflow-auto"
+                      placeholder="Waiting for text output..."
+                    />
+                  ) : (
+                    <>
+                      <img
+                        src={execution.resultUrl || '/removeCharacter.jpg'}
+                        alt="Generation Result"
+                        onLoad={(e) => {
+                          const img = e.currentTarget;
+                          setResultDimensions({ width: img.naturalWidth, height: img.naturalHeight });
+                        }}
+                        className={`max-w-full max-h-full object-contain rounded-lg transition-all duration-500 ${execution.isProcessing ? 'blur-md opacity-50 grayscale' : ''
+                          }`}
+                      />
 
-                  {execution.resultUrl && !execution.isProcessing && (
-                    <button
-                      onClick={() => {
-                        window.open(execution.resultUrl!, '_blank');
-                        addLog('INFO', 'Image opened in new tab.');
-                      }}
-                      className="absolute top-4 right-4 bg-white/90 dark:bg-black/80 p-3 rounded-full shadow-lg hover:scale-110 active:scale-95 transition-all opacity-0 group-hover:opacity-100 flex items-center justify-center text-primary z-10"
-                      title="Open in New Tab"
-                    >
-                      <span className="material-symbols-outlined">open_in_new</span>
-                    </button>
+                      {execution.resultUrl && !execution.isProcessing && (
+                        <button
+                          onClick={() => {
+                            window.open(execution.resultUrl!, '_blank');
+                            addLog('INFO', 'Image opened in new tab.');
+                          }}
+                          className="absolute top-4 right-4 bg-white/90 dark:bg-black/80 p-3 rounded-full shadow-lg hover:scale-110 active:scale-95 transition-all opacity-0 group-hover:opacity-100 flex items-center justify-center text-primary z-10"
+                          title="Open in New Tab"
+                        >
+                          <span className="material-symbols-outlined">open_in_new</span>
+                        </button>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
@@ -446,8 +472,19 @@ const ExecutionView: React.FC<ExecutionViewProps> = ({ selectedWorkflow, prompt,
         </div>
       </div>
 
-      <footer className="bg-white dark:bg-panel-dark border-t p-2 transition-all duration-300">
-        <div className="max-w-[1400px] mx-auto flex flex-col gap-2">
+      <footer className="bg-white dark:bg-panel-dark border-t p-2 transition-all duration-300 relative">
+        {/* Progress Bar */}
+        <div className="absolute top-0 left-0 w-full h-1 bg-neutral-200 dark:bg-neutral-800">
+          <div
+            className={`h-full transition-all duration-300 ease-out ${execution.progress === 100 && !execution.isProcessing
+              ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]'
+              : 'bg-primary shadow-[0_0_10px_rgba(59,130,246,0.5)]'
+              }`}
+            style={{ width: `${execution.progress}%` }}
+          />
+        </div>
+
+        <div className="max-w-[1400px] mx-auto flex flex-col gap-2 pt-2">
           <div className="flex items-center justify-between">
             <button
               onClick={runProcess}

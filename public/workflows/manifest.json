@@ -3,17 +3,20 @@
     "klein_mix_cb.json",
     "klein_mix_clothes.json",
     "klein_rm.json",
-    "klein_t2i.json",
+    "klein_t2i_base.json",
     "male_epn_i2i_v1.json",
     "male_fc_v1.json",
+    "ollama_i2t.json",
     "vu_bd_v1.json",
     "vu_bd_v2.json",
     "vu_bd_v3.json",
     "vu_bds_v1.json",
     "vu_face_v2.json",
     "vu_face_v6.json",
-    "zimageI2I.json"
+    "xklein.json",
+    "zimageI2I.json",
+    "zimage_base.json"
   ],
-  "generatedAt": "2026-02-03T00:53:44.820Z",
-  "count": 13
+  "generatedAt": "2026-02-04T13:15:51.376Z",
+  "count": 16
 }

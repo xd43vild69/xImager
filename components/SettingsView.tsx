@@ -35,6 +35,32 @@ const SettingsView: React.FC = () => {
 
         {/* Form Container */}
         <div className="bg-white dark:bg-surface-dark/40 border border-neutral-200 dark:border-border-dark rounded-2xl p-8 flex flex-col gap-8 shadow-2xl">
+          {/* Audio Preferences */}
+          <div>
+            <div className="flex items-center gap-2 mb-6 border-b border-neutral-100 dark:border-border-dark pb-3">
+              <span className="material-symbols-outlined text-primary font-bold">volume_up</span>
+              <h3 className="text-neutral-900 dark:text-white text-xl font-bold leading-tight tracking-tight">Global Configuration</h3>
+            </div>
+            <div className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-[#1b1f27] border border-neutral-200 dark:border-border-dark rounded-xl">
+              <div className="flex items-center gap-4">
+                <div className={`p-3 rounded-full ${settings.isMuted ? 'bg-neutral-200 text-neutral-500 dark:bg-neutral-800' : 'bg-primary/10 text-primary'}`}>
+                  <span className="material-symbols-outlined">{settings.isMuted ? 'volume_off' : 'volume_up'}</span>
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-neutral-900 dark:text-white">Success Notification Sound</h4>
+                  <p className="text-xs text-neutral-500 dark:text-[#9ca6ba]">Play a sound when a generation completes successfully.</p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => updateSettings({ isMuted: !settings.isMuted })}
+                className={`relative w-12 h-6 rounded-full transition-colors duration-200 ease-in-out ${settings.isMuted ? 'bg-neutral-300 dark:bg-neutral-700' : 'bg-primary'}`}
+              >
+                <span className={`absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow-sm transform transition-transform duration-200 ease-in-out ${settings.isMuted ? 'translate-x-0' : 'translate-x-6'}`} />
+              </button>
+            </div>
+          </div>
+
           {/* Directory Paths Section */}
           <div>
             <div className="flex items-center gap-2 mb-6 border-b border-neutral-100 dark:border-border-dark pb-3">

@@ -1,0 +1,95 @@
+{
+  "1": {
+    "inputs": {
+      "query": [
+        "9",
+        0
+      ],
+      "debug": "enable",
+      "url": "http://127.0.0.1:11434",
+      "model": "redule26/huihui_ai_qwen2.5-vl-7b-abliterated:latest",
+      "keep_alive": 5,
+      "format": "text",
+      "seed": 917891185,
+      "images": [
+        "2",
+        0
+      ]
+    },
+    "class_type": "OllamaVision",
+    "_meta": {
+      "title": "Ollama Vision (deprecated)"
+    }
+  },
+  "2": {
+    "inputs": {
+      "image": "Flux2_00147_.png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Image"
+    }
+  },
+  "3": {
+    "inputs": {
+      "preview": "### Description of the Image:\nThe image features a woman standing outdoors in a natural setting, likely a park or garden. She is wearing a black lace top and a denim skirt, paired with flip-flops. Her hair is long and appears to be light brown or auburn, styled in loose waves. The background consists of greenery, including grass and trees, suggesting a serene and natural environment. The lighting is natural, likely from the sun, which creates a soft and even illumination on the subject.\n\n### Caption Detail for Each Category:\n- **Shot Type:** Medium shot\n- **Camera Horizontal Angle:** Front view\n- **Camera Vertical Angle:** Eye-level shot\n- **Composition:** Rule of thirds\n- **Subject's Body Position/Pose:** Standing\n- **Subject's head angle/Pose:** Looking toward the camera\n- **Subject's Expression:** Smiling\n- **Lighting:** Natural light\n- **Background/Environment:** Forest\n- **Subject's Cloths:** Wearing a black lace top and a denim skirt\n- **Subject's detailed hair description:** Long, light brown/auburn, loose waves\n- **Temporary Attributes:** Flip-flops\n\n### Caption for LoRA Training:\n\"Medium shot of a woman standing in a forest, wearing a black lace top and a denim skirt, with long, light brown/auburn, loose waves hair, smiling at the camera, shot at eye-level with natural light, wearing flip-flops.\"",
+      "previewMode": null,
+      "source": [
+        "1",
+        0
+      ]
+    },
+    "class_type": "PreviewAny",
+    "_meta": {
+      "title": "Preview as Text"
+    }
+  },
+  "6": {
+    "inputs": {
+      "text": "a woman\n"
+    },
+    "class_type": "Text Multiline",
+    "_meta": {
+      "title": "TextHint"
+    }
+  },
+  "8": {
+    "inputs": {
+      "text": "You are an expert at training LoRA and preparing a dataset for Character LoRA. First describe this picture in natural language. Then, Prepare the caption for this image, assuming we are training a Character LoRA for the main subject in this image on flux using the T5 clip in natural language, using each and every one of these captioning categories:\n\n- Shot Type: wide shot, medium shot, close-up, extreme close-up, dolly shot, crane shot, aerial view, POV shot, establishing shot.\n- Camera Horizontal Angle: front view, profile view, three-quarter view, view from behind\n- Camera Vertical Angle: low angle, high angle, eye-level shot, dutch angle\n- Composition: rule of thirds, leading lines, shallow depth of field, deep focus, anamorphic bokeh, symmetrical composition.\n- Subject's Body Position/Pose: (e.g., standing, sitting, walking, etc.)\n- Subject's head angle/Pose: (facing front, looking slightly left, looking behind her, looking toward the camera, three-fourth, etc.)\n- Subject's Expression: (e.g., smiling, serious expression, thoughtful, seductive, flirtatious, submissive, angry, etc)\n- Lighting: (e.g., soft lighting, harsh shadows, golden hour, volumetric lighting, chiaroscuro, rim lighting, backlighting, neon glow, natural light, god rays, lens flare, etc.)\n- Background/Environment: (e.g., studio background, city street, forest, etc)\n- Subject's Cloths: (e.g., wearing a white dress, pants, naked, etc)\n- Subject's detailed hair description including hair color and hair style (e.g., short hair, bob cut, light brown color, etc)\n- Temporary Attributes: (e.g., accessories, glasses, any details not mentioned in the previous categories)\n\nDo not add any comments other than a) the description of the image b) a list of caption detail for each category and c) the exact caption to be included in the LoRA training for this dataset image using all the categories\n\n\nHINT: "
+    },
+    "class_type": "Text Multiline",
+    "_meta": {
+      "title": "Prompt"
+    }
+  },
+  "9": {
+    "inputs": {
+      "string_a": [
+        "8",
+        0
+      ],
+      "string_b": [
+        "6",
+        0
+      ],
+      "delimiter": ""
+    },
+    "class_type": "StringConcatenate",
+    "_meta": {
+      "title": "Concatenate"
+    }
+  },
+  "24": {
+    "inputs": {
+      "text2": "### Description of the Image:\nThe image features a woman standing outdoors in a natural setting, likely a park or garden. She is wearing a black lace top and a denim skirt, paired with flip-flops. Her hair is long and appears to be light brown or auburn, styled in loose waves. The background consists of greenery, including grass and trees, suggesting a serene and natural environment. The lighting is natural, likely from the sun, which creates a soft and even illumination on the subject.\n\n### Caption Detail for Each Category:\n- **Shot Type:** Medium shot\n- **Camera Horizontal Angle:** Front view\n- **Camera Vertical Angle:** Eye-level shot\n- **Composition:** Rule of thirds\n- **Subject's Body Position/Pose:** Standing\n- **Subject's head angle/Pose:** Looking toward the camera\n- **Subject's Expression:** Smiling\n- **Lighting:** Natural light\n- **Background/Environment:** Forest\n- **Subject's Cloths:** Wearing a black lace top and a denim skirt\n- **Subject's detailed hair description:** Long, light brown/auburn, loose waves\n- **Temporary Attributes:** Flip-flops\n\n### Caption for LoRA Training:\n\"Medium shot of a woman standing in a forest, wearing a black lace top and a denim skirt, with long, light brown/auburn, loose waves hair, smiling at the camera, shot at eye-level with natural light, wearing flip-flops.\"",
+      "text": [
+        "1",
+        0
+      ]
+    },
+    "class_type": "ShowText",
+    "_meta": {
+      "title": "OutputOllama"
+    }
+  }
+}

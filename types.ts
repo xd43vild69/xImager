@@ -36,6 +36,8 @@ export interface ExecutionState {
   iterRate: string;
   totalTime: string;
   resultUrl: string | null;
+  resultType?: 'image' | 'text';
+  resultText?: string | null;
   promptId?: string;
 }
 

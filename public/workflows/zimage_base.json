@@ -1,0 +1,220 @@
+{
+  "6": {
+    "inputs": {
+      "text": "lv_bd2\nfull body view, full shot\n\nthick thighs, very wide hips\n\nwoman with hair bun\n\nside view\n\nvery white pale skin\nthree quarter view\n\nlooking directly at the viewer\n\nred lace bra\ntight-fitting red lingerie\n\nclothing intentionally one size too small\n\nvisible tension in the seams\nsee-through clothes\nred thigh-high stockings with garter straps\n\nwearing 8-inch open-toe platform mules\n\nsimple background, dark blue wall",
+      "clip": [
+        "29",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Positive Prompt)"
+    }
+  },
+  "7": {
+    "inputs": {
+      "text": "blurry ugly bad",
+      "clip": [
+        "29",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Negative Prompt)"
+    }
+  },
+  "13": {
+    "inputs": {
+      "width": [
+        "101",
+        0
+      ],
+      "height": [
+        "102",
+        0
+      ],
+      "batch_size": 1
+    },
+    "class_type": "EmptySD3LatentImage",
+    "_meta": {
+      "title": "EmptySD3LatentImage"
+    }
+  },
+  "17": {
+    "inputs": {
+      "vae_name": "ae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "18": {
+    "inputs": {
+      "clip_name": "qwen_3_4b.safetensors",
+      "type": "lumina2",
+      "device": "cpu"
+    },
+    "class_type": "CLIPLoader",
+    "_meta": {
+      "title": "Load CLIP"
+    }
+  },
+  "28": {
+    "inputs": {
+      "gguf_name": "z_image_turbo-Q8_0.gguf",
+      "dequant_dtype": "default",
+      "patch_dtype": "default",
+      "patch_on_device": false
+    },
+    "class_type": "LoaderGGUFAdvanced",
+    "_meta": {
+      "title": "GGUF Loader (Advanced)"
+    }
+  },
+  "29": {
+    "inputs": {
+      "PowerLoraLoaderHeaderWidget": {
+        "type": "PowerLoraLoaderHeaderWidget"
+      },
+      "lora_1": {
+        "on": false,
+        "lora": "z-lora\\man\\bzilla\\bzillaV1_e6.safetensors",
+        "strength": 0.8
+      },
+      "lora_2": {
+        "on": false,
+        "lora": "z-lora\\l4t1n\\mlv1_e4.safetensors",
+        "strength": 0.2
+      },
+      "lora_3": {
+        "on": false,
+        "lora": "render\\skinTones.safetensors",
+        "strength": 0.23
+      },
+      "lora_4": {
+        "on": false,
+        "lora": "z-lora\\mde\\mdev1_e8.safetensors",
+        "strength": 0.26
+      },
+      "lora_5": {
+        "on": false,
+        "lora": "z-lora\\vu-6\\zVu_v6_e8.safetensors",
+        "strength": 0.2
+      },
+      "➕ Add Lora": "",
+      "model": [
+        "28",
+        0
+      ],
+      "clip": [
+        "18",
+        0
+      ]
+    },
+    "class_type": "Power Lora Loader (rgthree)",
+    "_meta": {
+      "title": "Power Lora Loader (rgthree)"
+    }
+  },
+  "38": {
+    "inputs": {
+      "value": 761500127799358
+    },
+    "class_type": "PrimitiveInt",
+    "_meta": {
+      "title": "Seed"
+    }
+  },
+  "48": {
+    "inputs": {
+      "seed": [
+        "38",
+        0
+      ],
+      "steps": 8,
+      "cfg": 1,
+      "sampler_name": "seeds_3",
+      "scheduler": "beta",
+      "denoise": 1,
+      "model": [
+        "29",
+        0
+      ],
+      "positive": [
+        "6",
+        0
+      ],
+      "negative": [
+        "7",
+        0
+      ],
+      "latent_image": [
+        "13",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler"
+    }
+  },
+  "67": {
+    "inputs": {
+      "text": "(worst quality:1.2, low quality:1.2, normal quality:1.2), lowres, bad anatomy, ugly, imperfect eyes, skewed eyes, unnatural face, error, extra limbs, score_6_up, score_5_up, score_4_up"
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "99": {
+    "inputs": {
+      "filename_prefix": "ComfyUI",
+      "images": [
+        "100",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  },
+  "100": {
+    "inputs": {
+      "samples": [
+        "48",
+        0
+      ],
+      "vae": [
+        "17",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "101": {
+    "inputs": {
+      "value": 1024
+    },
+    "class_type": "PrimitiveInt",
+    "_meta": {
+      "title": "Int"
+    }
+  },
+  "102": {
+    "inputs": {
+      "value": 1754
+    },
+    "class_type": "PrimitiveInt",
+    "_meta": {
+      "title": "Int"
+    }
+  }
+}

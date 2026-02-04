@@ -63,7 +63,7 @@ Export your workflow from ComfyUI in **API Format** (Save (API Format) button) a
 3.  In the prompt box, type `@face_fix` to use it.
 
 
----
+--- 
 
 ### TODO
 
@@ -73,10 +73,10 @@ Export your workflow from ComfyUI in **API Format** (Save (API Format) button) a
 - seed fix or increase
 - denoise sampler for i2i
 
+[x] sonido al finalizar un proceso
 
-
-- sonido al finalizar un proceso
-
+[x] ollama image to text basic workflow
 - batch size and read input from folder 
 
+- new view to configure shortcuts
 

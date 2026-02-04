@@ -7,6 +7,7 @@ interface Settings {
     outputDirectory: string;
     keywords: Record<string, string>;
     workflowPrompts: Record<string, string>;
+    isMuted: boolean;
 }
 
 interface SettingsContextType {
@@ -22,6 +23,7 @@ const defaultSettings: Settings = {
     outputDirectory: 'D:/Generations/Comfy-Output',
     keywords: {},
     workflowPrompts: {},
+    isMuted: true, // Default to muted
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
