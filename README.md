@@ -80,3 +80,11 @@ Export your workflow from ComfyUI in **API Format** (Save (API Format) button) a
 
 - new view to configure shortcuts
 
+
+### Security TODOs (High Priority)
+- [ ] **Fix XSS in Debug Console**: `server.js` renders `log.url` and `log.method` using `innerHTML` without sanitization.
+- [ ] **Implement Authentication**: The backend proxy is open; anyone can access ComfyUI or spy on traffic.
+- [ ] **Info Leak**: `/debug/events` broadcasts all request bodies (prompts, images) to unauthenticated listeners.
+- [ ] **Sanitize Inputs**: Validate `req.body` and `req.params` before forwarding.
+- [ ] **Security Headers**: Add `helmet` and configure CORS properly to prevent unauthorized cross-origin usage.
+- [ ] **Error Handling**: Suppress internal stack traces in production responses.

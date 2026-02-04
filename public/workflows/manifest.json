@@ -6,7 +6,7 @@
     "klein_t2i_base.json",
     "male_epn_i2i_v1.json",
     "male_fc_v1.json",
-    "ollama_i2t.json",
+    "ollama_i2t_v1.json",
     "vu_bd_v1.json",
     "vu_bd_v2.json",
     "vu_bd_v3.json",
@@ -17,6 +17,6 @@
     "zimageI2I.json",
     "zimage_base.json"
   ],
-  "generatedAt": "2026-02-04T13:15:51.376Z",
+  "generatedAt": "2026-02-04T18:20:51.778Z",
   "count": 16
 }
