@@ -1,0 +1,205 @@
+{
+  "80": {
+    "inputs": {
+      "sampler_name": "euler"
+    },
+    "class_type": "KSamplerSelect",
+    "_meta": {
+      "title": "KSamplerSelect"
+    }
+  },
+  "81": {
+    "inputs": {
+      "noise": [
+        "93",
+        0
+      ],
+      "guider": [
+        "91",
+        0
+      ],
+      "sampler": [
+        "80",
+        0
+      ],
+      "sigmas": [
+        "90",
+        0
+      ],
+      "latent_image": [
+        "83",
+        0
+      ]
+    },
+    "class_type": "SamplerCustomAdvanced",
+    "_meta": {
+      "title": "SamplerCustomAdvanced"
+    }
+  },
+  "82": {
+    "inputs": {
+      "samples": [
+        "81",
+        0
+      ],
+      "vae": [
+        "88",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "83": {
+    "inputs": {
+      "width": [
+        "85",
+        0
+      ],
+      "height": [
+        "98",
+        0
+      ],
+      "batch_size": 1
+    },
+    "class_type": "EmptyFlux2LatentImage",
+    "_meta": {
+      "title": "Empty Flux 2 Latent"
+    }
+  },
+  "84": {
+    "inputs": {
+      "text": "",
+      "clip": [
+        "94",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Negative Prompt)"
+    }
+  },
+  "85": {
+    "inputs": {
+      "value": 1024
+    },
+    "class_type": "PrimitiveInt",
+    "_meta": {
+      "title": "Width"
+    }
+  },
+  "88": {
+    "inputs": {
+      "vae_name": "flux2-vae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "89": {
+    "inputs": {
+      "text": "a woman, hold own breasts from below",
+      "clip": [
+        "94",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Positive Prompt)"
+    }
+  },
+  "90": {
+    "inputs": {
+      "steps": 8,
+      "width": [
+        "85",
+        0
+      ],
+      "height": [
+        "98",
+        0
+      ]
+    },
+    "class_type": "Flux2Scheduler",
+    "_meta": {
+      "title": "Flux2Scheduler"
+    }
+  },
+  "91": {
+    "inputs": {
+      "cfg": 0.6,
+      "model": [
+        "97",
+        0
+      ],
+      "positive": [
+        "89",
+        0
+      ],
+      "negative": [
+        "84",
+        0
+      ]
+    },
+    "class_type": "CFGGuider",
+    "_meta": {
+      "title": "CFGGuider"
+    }
+  },
+  "93": {
+    "inputs": {
+      "noise_seed": 182805313177008
+    },
+    "class_type": "RandomNoise",
+    "_meta": {
+      "title": "RandomNoise"
+    }
+  },
+  "94": {
+    "inputs": {
+      "clip_name": "qwen_3_8b_fp8mixed_klein.safetensors",
+      "type": "flux2",
+      "device": "default"
+    },
+    "class_type": "CLIPLoader",
+    "_meta": {
+      "title": "Load CLIP"
+    }
+  },
+  "95": {
+    "inputs": {
+      "filename_prefix": "2026-01-31-14-45-18",
+      "images": [
+        "82",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  },
+  "97": {
+    "inputs": {
+      "unet_name": "flux-2-klein-9b-Q8_0.gguf"
+    },
+    "class_type": "UnetLoaderGGUF",
+    "_meta": {
+      "title": "Unet Loader (GGUF)"
+    }
+  },
+  "98": {
+    "inputs": {
+      "value": 1700
+    },
+    "class_type": "PrimitiveInt",
+    "_meta": {
+      "title": "Width"
+    }
+  }
+}

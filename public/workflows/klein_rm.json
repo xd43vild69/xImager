@@ -166,7 +166,7 @@
   },
   "448": {
     "inputs": {
-      "noise_seed": 557229953302351
+      "noise_seed": 52654513187121
     },
     "class_type": "RandomNoise",
     "_meta": {
@@ -210,7 +210,7 @@
   },
   "455": {
     "inputs": {
-      "image": "1(1).jpg"
+      "image": "pasted/image.png"
     },
     "class_type": "LoadImage",
     "_meta": {
@@ -239,10 +239,7 @@
       "method": "lanczos",
       "round_to_multiple": "16",
       "scale_to_side": "longest",
-      "scale_to_length": [
-        "463",
-        0
-      ],
+      "scale_to_length": 1024,
       "background_color": "#000000",
       "image": [
         "455",
@@ -263,15 +260,6 @@
     "class_type": "CLIPLoader",
     "_meta": {
       "title": "Load CLIP"
-    }
-  },
-  "463": {
-    "inputs": {
-      "Number": "1920"
-    },
-    "class_type": "Int",
-    "_meta": {
-      "title": "Int"
     }
   }
 }

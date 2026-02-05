@@ -1,0 +1,95 @@
+{
+  "1": {
+    "inputs": {
+      "url": "http://127.0.0.1:11434",
+      "model": "redule26/huihui_ai_qwen2.5-vl-7b-abliterated:latest",
+      "keep_alive": 0,
+      "keep_alive_unit": "minutes",
+      "🔄 Reconnect": null
+    },
+    "class_type": "OllamaConnectivityV2",
+    "_meta": {
+      "title": "Ollama Connectivity"
+    }
+  },
+  "2": {
+    "inputs": {
+      "image": "example.png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Image"
+    }
+  },
+  "3": {
+    "inputs": {
+      "system": "",
+      "prompt": "Perform a comprehensive and exhaustive analysis of the provided image. Meticulously describe the main subject, including precise anatomy, clothing textures, specific materials, exact body posture, and facial expression. Detail the environment/setting, depth of field, lighting conditions (source, direction, and quality of light), and the predominant color palette. Avoid any subjective assumptions; strictly adhere to visible details. Structure the response as a dense, natural language narrative paragraph, followed by a section of technical photography tags",
+      "think": false,
+      "keep_context": false,
+      "format": "text",
+      "connectivity": [
+        "1",
+        0
+      ],
+      "images": [
+        "2",
+        0
+      ]
+    },
+    "class_type": "OllamaGenerateV2",
+    "_meta": {
+      "title": "Ollama Generate"
+    }
+  },
+  "4": {
+    "inputs": {
+      "preview": "The image depicts a cartoon character with large yellow wings, blue eyes, and a pink dress, standing on a green hill under a blue sky.",
+      "previewMode": null,
+      "source": [
+        "3",
+        0
+      ]
+    },
+    "class_type": "PreviewAny",
+    "_meta": {
+      "title": "Preview as Text"
+    }
+  },
+  "5": {
+    "inputs": {
+      "anything": [
+        "3",
+        0
+      ]
+    },
+    "class_type": "easy cleanGpuUsed",
+    "_meta": {
+      "title": "Clean VRAM Used"
+    }
+  },
+  "6": {
+    "inputs": {
+      "anything": [
+        "3",
+        0
+      ]
+    },
+    "class_type": "easy clearCacheAll",
+    "_meta": {
+      "title": "Clear Cache All"
+    }
+  },
+  "7": {
+    "inputs": {
+      "images": [
+        "2",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  }
+}

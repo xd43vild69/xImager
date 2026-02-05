@@ -1,7 +1,7 @@
 {
   "6": {
     "inputs": {
-      "text": "lv_bd2\nfull body view, full shot\n\nthick thighs, very wide hips\n\nwoman with hair bun\n\nside view\n\nvery white pale skin\nthree quarter view\n\nlooking directly at the viewer\n\nred lace bra\ntight-fitting red lingerie\n\nclothing intentionally one size too small\n\nvisible tension in the seams\nsee-through clothes\nred thigh-high stockings with garter straps\n\nwearing 8-inch open-toe platform mules\n\nsimple background, dark blue wall",
+      "text": "a woman looking at viewer",
       "clip": [
         "29",
         1
@@ -121,7 +121,7 @@
   },
   "38": {
     "inputs": {
-      "value": 761500127799358
+      "value": 658649955585483
     },
     "class_type": "PrimitiveInt",
     "_meta": {
@@ -201,7 +201,7 @@
   },
   "101": {
     "inputs": {
-      "value": 1024
+      "value": 512
     },
     "class_type": "PrimitiveInt",
     "_meta": {
@@ -210,7 +210,7 @@
   },
   "102": {
     "inputs": {
-      "value": 1754
+      "value": 512
     },
     "class_type": "PrimitiveInt",
     "_meta": {
